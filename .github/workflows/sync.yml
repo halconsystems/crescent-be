@@ -3,15 +3,18 @@ name: Sync to Secondary Repo
 on:
   push:
     branches:
-      - master   # change to master if your main branch is master
+      - master
 
 jobs:
   sync:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout main repo
+      - name: Checkout master branch
         uses: actions/checkout@v3
+        with:
+          ref: master
+          fetch-depth: 0
 
       - name: Push to secondary repo
         run: |
@@ -19,4 +22,4 @@ jobs:
           git config --global user.email "actions@github.com"
 
           git remote add secondary https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/fayzan101/crescent-be.git
-          git push secondary HEAD:main --force
+          git push secondary master:main --force
