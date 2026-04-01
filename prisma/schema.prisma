@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -7,11 +8,282 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DesignationType {
+  GM
+  Manager
+  Staff
+  Technician
+}
+
+model Office {
+  officeId   Int      @id @default(autoincrement()) @map("OfficeID")
+  officeName String   @unique @map("OfficeName")
+  isActive   Boolean  @default(true) @map("IsActive")
+  createdAt  DateTime @default(now()) @map("CreatedAt")
+  updatedAt  DateTime @updatedAt @map("UpdatedAt")
+
+  zones Zone[]
+
+  @@map("Office")
+}
+
+model Product {
+  productId   Int      @id @default(autoincrement()) @map("ProductID")
+  productName String   @unique @map("ProductName")
+  isActive    Boolean  @default(true) @map("IsActive")
+  createdAt   DateTime @default(now()) @map("CreatedAt")
+  updatedAt   DateTime @updatedAt @map("UpdatedAt")
+
+  @@map("Product")
+}
+
+model Bank {
+  bankId   Int      @id @default(autoincrement()) @map("BankID")
+  bankName String   @unique @map("BankName")
+  bankCode String?  @unique @map("BankCode")
+  isActive Boolean  @default(true) @map("IsActive")
+  createdAt DateTime @default(now()) @map("CreatedAt")
+  updatedAt DateTime @updatedAt @map("UpdatedAt")
+
+  bankAccounts BankAccount[]
+
+  @@map("Bank")
+}
+
+model BankAccount {
+  bankAccountId Int      @id @default(autoincrement()) @map("BankAccountID")
+  bankId        Int      @map("BankID")
+  accountNo     String   @map("AccountNo")
+  iban          String?  @unique @map("IBAN")
+  branchCode    String?  @map("BranchCode")
+  branch        String?  @map("Branch")
+  isActive      Boolean  @default(true) @map("IsActive")
+  createdAt     DateTime @default(now()) @map("CreatedAt")
+  updatedAt     DateTime @updatedAt @map("UpdatedAt")
+
+  bank Bank @relation(fields: [bankId], references: [bankId])
+
+  @@map("BankAccount")
+}
+
+model City {
+  cityId   Int      @id @default(autoincrement()) @map("CityID")
+  cityName String   @unique @map("CityName")
+  isActive Boolean  @default(true) @map("IsActive")
+  createdAt DateTime @default(now()) @map("CreatedAt")
+  updatedAt DateTime @updatedAt @map("UpdatedAt")
+
+  vendors Vendor[]
+
+  @@map("City")
+}
+
+model Vendor {
+  vendorId        Int      @id @default(autoincrement()) @map("VendorID")
+  vendorName      String   @unique @map("VendorName")
+  cityId          Int?     @map("CityID")
+  address         String?  @map("Address")
+  emailId         String?  @map("EmailID")
+  contactPerson   String?  @map("ContactPerson")
+  primaryMobile   String?  @map("PrimaryMobile")
+  secondaryMobile String?  @map("SecondaryMobile")
+  isActive        Boolean  @default(true) @map("IsActive")
+  createdAt       DateTime @default(now()) @map("CreatedAt")
+  updatedAt       DateTime @updatedAt @map("UpdatedAt")
+
+  city City? @relation(fields: [cityId], references: [cityId])
+
+  @@map("Vendor")
+}
+
+model Role {
+  roleId      Int      @id @default(autoincrement()) @map("RoleID")
+  roleName    String   @unique @map("RoleName")
+  description String?  @map("Description")
+  isActive    Boolean  @default(true) @map("IsActive")
+  createdAt   DateTime @default(now()) @map("CreatedAt")
+  updatedAt   DateTime @updatedAt @map("UpdatedAt")
+
+  userRoles UserRole[]
+
+  @@map("Role")
+}
+
+model Employee {
+  employeeId        Int              @id @default(autoincrement()) @map("EmployeeID")
+  emailId           String?          @unique @map("EmailID")
+  primaryMobileNo   String?          @unique @map("PrimaryMobileNo")
+  cnic              String           @unique @map("CNIC")
+  designation       DesignationType  @map("Designation")
+  nextOfKin         String?          @map("NextOfKin")
+  nextOfKinContact  String?          @map("NextOfKinContact")
+  isActive          Boolean          @default(true) @map("IsActive")
+  createdAt         DateTime         @default(now()) @map("CreatedAt")
+  updatedAt         DateTime         @updatedAt @map("UpdatedAt")
+
+  appUser      AppUser?
+  zoneEmployees ZoneEmployee[]
+
+  @@map("Employee")
+}
+
+model AppUser {
+  userId               Int       @id @default(autoincrement()) @map("UserID")
+  employeeId           Int?      @unique @map("EmployeeID")
+  userName             String    @unique @map("UserName")
+  passwordHash         String    @map("PasswordHash")
+  isTempPassword       Boolean   @default(true) @map("IsTempPassword")
+  mustChangePassword   Boolean   @default(true) @map("MustChangePassword")
+  isEmailVerified      Boolean   @default(false) @map("IsEmailVerified")
+  isMobileVerified     Boolean   @default(false) @map("IsMobileVerified")
+  isActive             Boolean   @default(true) @map("IsActive")
+  isLocked             Boolean   @default(false) @map("IsLocked")
+  failedLoginAttempts  Int       @default(0) @map("FailedLoginAttempts")
+  lastLoginAt          DateTime? @map("LastLoginAt")
+  lastPasswordChangedAt DateTime? @map("LastPasswordChangedAt")
+  createdAt            DateTime  @default(now()) @map("CreatedAt")
+  updatedAt            DateTime  @updatedAt @map("UpdatedAt")
+  createdByUserId      Int?      @map("CreatedByUserID")
+
+  employee            Employee?            @relation(fields: [employeeId], references: [employeeId])
+  createdBy           AppUser?             @relation("AppUserCreatedBy", fields: [createdByUserId], references: [userId])
+  createdUsers        AppUser[]            @relation("AppUserCreatedBy")
+  userRoles           UserRole[]
+  assignedUserRoles   UserRole[]           @relation("UserRoleAssignedBy")
+  passwordResetTokens PasswordResetToken[]
+  passwordHistory     UserPasswordHistory[]
+  sessions            UserSession[]
+
+  @@map("AppUser")
+}
+
+model UserRole {
+  userRoleId        Int      @id @default(autoincrement()) @map("UserRoleID")
+  userId            Int      @map("UserID")
+  roleId            Int      @map("RoleID")
+  assignedAt        DateTime @default(now()) @map("AssignedAt")
+  assignedByUserId  Int?     @map("AssignedByUserID")
+  createdAt         DateTime @default(now()) @map("CreatedAt")
+  updatedAt         DateTime @updatedAt @map("UpdatedAt")
+
+  user       AppUser @relation(fields: [userId], references: [userId])
+  role       Role    @relation(fields: [roleId], references: [roleId])
+  assignedBy AppUser? @relation("UserRoleAssignedBy", fields: [assignedByUserId], references: [userId])
+
+  @@unique([userId, roleId])
+  @@map("UserRole")
+}
+
+model PasswordResetToken {
+  resetTokenId       Int       @id @default(autoincrement()) @map("ResetTokenID")
+  userId             Int       @map("UserID")
+  tokenHash          String    @map("TokenHash")
+  requestedAt        DateTime  @default(now()) @map("RequestedAt")
+  expiresAt          DateTime  @map("ExpiresAt")
+  usedAt             DateTime? @map("UsedAt")
+  requestedIp        String?   @map("RequestedIP")
+  requestedUserAgent String?   @map("RequestedUserAgent")
+  isActive           Boolean   @default(true) @map("IsActive")
+  createdAt          DateTime  @default(now()) @map("CreatedAt")
+
+  user AppUser @relation(fields: [userId], references: [userId])
+
+  @@map("PasswordResetToken")
+}
+
+model UserPasswordHistory {
+  passwordHistoryId Int      @id @default(autoincrement()) @map("PasswordHistoryID")
+  userId            Int      @map("UserID")
+  passwordHash      String   @map("PasswordHash")
+  createdAt         DateTime @default(now()) @map("CreatedAt")
+
+  user AppUser @relation(fields: [userId], references: [userId])
+
+  @@map("UserPasswordHistory")
+}
+
+model UserSession {
+  sessionId           Int       @id @default(autoincrement()) @map("SessionID")
+  userId              Int       @map("UserID")
+  refreshTokenHash    String    @map("RefreshTokenHash")
+  jwtId               String?   @unique @map("JwtID")
+  deviceInfo          String?   @map("DeviceInfo")
+  ipv4                String?   @map("IPV4")
+  ipv6                String?   @map("IPV6")
+  userAgent           String?   @map("UserAgent")
+  issuedAt            DateTime  @default(now()) @map("IssuedAt")
+  expiresAt           DateTime  @map("ExpiresAt")
+  lastUsedAt          DateTime? @map("LastUsedAt")
+  revokedAt           DateTime? @map("RevokedAt")
+  revokedReason       String?   @map("RevokedReason")
+  replacedBySessionId Int?      @map("ReplacedBySessionID")
+  isActive            Boolean   @default(true) @map("IsActive")
+  createdAt           DateTime  @default(now()) @map("CreatedAt")
+  updatedAt           DateTime  @updatedAt @map("UpdatedAt")
+
+  user             AppUser       @relation(fields: [userId], references: [userId])
+  replacedBy       UserSession?  @relation("SessionReplacement", fields: [replacedBySessionId], references: [sessionId])
+  replacedSessions UserSession[] @relation("SessionReplacement")
+
+  @@map("UserSession")
+}
+
+model ClientCategory {
+  categoryId   Int      @id @default(autoincrement()) @map("CategoryID")
+  categoryName String   @unique @map("CategoryName")
+  isActive     Boolean  @default(true) @map("IsActive")
+  createdAt    DateTime @default(now()) @map("CreatedAt")
+  updatedAt    DateTime @updatedAt @map("UpdatedAt")
+
+  @@map("ClientCategory")
+}
+
+model Package {
+  packageId         Int      @id @default(autoincrement()) @map("PackageID")
+  packageName       String   @unique @map("PackageName")
+  minCharges        Decimal? @map("MinCharges") @db.Decimal(12, 2)
+  minRenewalCharges Decimal? @map("MinRenewalCharges") @db.Decimal(12, 2)
+  isActive          Boolean  @default(true) @map("IsActive")
+  createdAt         DateTime @default(now()) @map("CreatedAt")
+  updatedAt         DateTime @updatedAt @map("UpdatedAt")
+
+  @@map("Package")
+}
+
+model Zone {
+  zoneId    Int      @id @default(autoincrement()) @map("ZoneID")
+  officeId  Int      @map("OfficeID")
+  zoneName  String   @map("ZoneName")
+  isActive  Boolean  @default(true) @map("IsActive")
+  createdAt DateTime @default(now()) @map("CreatedAt")
+  updatedAt DateTime @updatedAt @map("UpdatedAt")
+
+  office        Office         @relation(fields: [officeId], references: [officeId])
+  zoneEmployees ZoneEmployee[]
+
+  @@unique([officeId, zoneName])
+  @@map("Zone")
+}
+
+model ZoneEmployee {
+  zoneEmployeeId Int      @id @default(autoincrement()) @map("ZoneEmployeeID")
+  zoneId         Int      @map("ZoneID")
+  employeeId     Int      @map("EmployeeID")
+  createdAt      DateTime @default(now()) @map("CreatedAt")
+  updatedAt      DateTime @updatedAt @map("UpdatedAt")
+
+  zone     Zone     @relation(fields: [zoneId], references: [zoneId])
+  employee Employee @relation(fields: [employeeId], references: [employeeId])
+
+  @@unique([zoneId, employeeId])
+  @@map("ZoneEmployee")
+}
+
 model Client {
-  id      Int    @id @default(autoincrement())
-  name    String
-  email   String   @unique
-  cnic    String   @unique
-  irNo    String   @map("ir.no")
-  phone   String
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
+  cnic  String @unique
+  irNo  String @map("ir.no")
+  phone String
 }
