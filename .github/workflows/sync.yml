@@ -1,4 +1,4 @@
-name: Sync to Secondary Repo
+name: Sync to Second Repo
 
 on:
   push:
@@ -10,18 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout master branch
+      - name: Checkout source repo
         uses: actions/checkout@v3
-        with:
-          ref: master
-          fetch-depth: 0
 
-
-
-      - name: Push to secondary repo
+      - name: Push to second repo
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
 
-          git remote add secondary https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/fayzan101/crescent-be.git
-          git push secondary master:main --force
+          git clone https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/fayzan101/crescent-be.git target
+
+          rsync -av --delete --exclude='.git' ./ target/
+
+          cd target
+          git add .
+          git commit -m "Auto sync from main repo" || echo "No changes"
+          git push origin main
