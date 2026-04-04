@@ -20,6 +20,7 @@ import { UserSessionsModule } from './modules/user-sessions/user-sessions.module
 import { ClientCategoriesModule } from './modules/client-categories/client-categories.module';
 import { PackagesModule } from './modules/packages/packages.module';
 import { ZoneEmployeesModule } from './modules/zone-employees/zone-employees.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ZoneEmployeesModule } from './modules/zone-employees/zone-employees.mod
     ClientCategoriesModule,
     PackagesModule,
     ZoneEmployeesModule,
+    AuthModule,
   ],
   providers: [
     {

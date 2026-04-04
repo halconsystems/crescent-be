@@ -7,20 +7,26 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { OfficesService } from './offices.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateOfficeDto } from './dto/create-office.dto';
 import { UpdateOfficeDto } from './dto/update-office.dto';
 
 @ApiTags('Offices')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/offices')
+@UseGuards(JwtAuthGuard)
 export class OfficesController {
   constructor(private readonly officesService: OfficesService) {}
 

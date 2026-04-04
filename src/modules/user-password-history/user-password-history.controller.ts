@@ -1,17 +1,32 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { UserPasswordHistoryService } from './user-password-history.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateUserPasswordHistoryDto } from './dto/create-user-password-history.dto';
 
 @ApiTags('User password history')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/user-password-history')
+@UseGuards(JwtAuthGuard)
 export class UserPasswordHistoryController {
   constructor(private readonly userPasswordHistoryService: UserPasswordHistoryService) {}
 

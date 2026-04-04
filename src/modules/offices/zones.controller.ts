@@ -8,21 +8,27 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 
 @ApiTags('Zones')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/zones')
+@UseGuards(JwtAuthGuard)
 export class ZonesController {
   constructor(private readonly zonesService: ZonesService) {}
 

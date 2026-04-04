@@ -8,21 +8,27 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { PasswordResetTokensService } from './password-reset-tokens.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreatePasswordResetTokenDto } from './dto/create-password-reset-token.dto';
 import { UpdatePasswordResetTokenDto } from './dto/update-password-reset-token.dto';
 
 @ApiTags('Password reset tokens')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/password-reset-tokens')
+@UseGuards(JwtAuthGuard)
 export class PasswordResetTokensController {
   constructor(private readonly passwordResetTokensService: PasswordResetTokensService) {}
 

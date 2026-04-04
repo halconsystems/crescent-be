@@ -8,21 +8,27 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { VendorsService } from './vendors.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 
 @ApiTags('Vendors')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/vendors')
+@UseGuards(JwtAuthGuard)
 export class VendorsController {
   constructor(private readonly vendorsService: VendorsService) {}
 

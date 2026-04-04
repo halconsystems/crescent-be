@@ -7,20 +7,26 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { PackagesService } from './packages.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreatePackageDto } from './dto/create-package.dto';
 import { UpdatePackageDto } from './dto/update-package.dto';
 
 @ApiTags('Packages')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/packages')
+@UseGuards(JwtAuthGuard)
 export class PackagesController {
   constructor(private readonly packagesService: PackagesService) {}
 

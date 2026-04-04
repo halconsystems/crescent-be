@@ -8,9 +8,11 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -18,12 +20,16 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { UserRolesService } from './user-roles.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateUserRoleDto } from './dto/create-user-role.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 @ApiTags('User roles')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/user-roles')
+@UseGuards(JwtAuthGuard)
 export class UserRolesController {
   constructor(private readonly userRolesService: UserRolesService) {}
 

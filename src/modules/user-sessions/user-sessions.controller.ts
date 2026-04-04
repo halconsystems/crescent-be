@@ -8,21 +8,27 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { UserSessionsService } from './user-sessions.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateUserSessionDto } from './dto/create-user-session.dto';
 import { UpdateUserSessionDto } from './dto/update-user-session.dto';
 
 @ApiTags('User sessions')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/user-sessions')
+@UseGuards(JwtAuthGuard)
 export class UserSessionsController {
   constructor(private readonly userSessionsService: UserSessionsService) {}
 

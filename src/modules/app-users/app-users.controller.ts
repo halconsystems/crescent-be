@@ -7,21 +7,27 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { AppUsersService } from './app-users.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateAppUserDto } from './dto/create-app-user.dto';
 import { UpdateAppUserDto } from './dto/update-app-user.dto';
 
 @ApiTags('App users')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/app-users')
+@UseGuards(JwtAuthGuard)
 export class AppUsersController {
   constructor(private readonly appUsersService: AppUsersService) {}
 

@@ -8,21 +8,27 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { BankAccountsService } from './bank-accounts.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
 
 @ApiTags('Bank accounts')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/bank-accounts')
+@UseGuards(JwtAuthGuard)
 export class BankAccountsController {
   constructor(private readonly bankAccountsService: BankAccountsService) {}
 

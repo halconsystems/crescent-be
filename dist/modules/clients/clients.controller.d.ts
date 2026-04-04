@@ -5,10 +5,10 @@ export declare class ClientsController {
     constructor(clientsService: ClientsService);
     createClient(createClientDto: CreateClientDto): Promise<{
         name: string;
-        id: number;
-        email: string;
         cnic: string;
+        email: string;
         irNo: string;
         phone: string;
+        id: number;
     }>;
 }

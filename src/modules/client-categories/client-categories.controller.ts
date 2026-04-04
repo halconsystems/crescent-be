@@ -7,20 +7,26 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { ClientCategoriesService } from './client-categories.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateClientCategoryDto } from './dto/create-client-category.dto';
 import { UpdateClientCategoryDto } from './dto/update-client-category.dto';
 
 @ApiTags('Client categories')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/client-categories')
+@UseGuards(JwtAuthGuard)
 export class ClientCategoriesController {
   constructor(private readonly clientCategoriesService: ClientCategoriesService) {}
 

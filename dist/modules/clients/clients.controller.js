@@ -14,7 +14,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClientsController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
+const openapi_document_builder_1 = require("../../swagger/openapi-document.builder");
 const clients_service_1 = require("./clients.service");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const create_client_dto_1 = require("./dto/create-client.dto");
 let ClientsController = class ClientsController {
     constructor(clientsService) {
@@ -26,6 +29,11 @@ let ClientsController = class ClientsController {
 };
 exports.ClientsController = ClientsController;
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new client' }),
+    (0, swagger_1.ApiBody)({ type: create_client_dto_1.CreateClientDto, description: 'Client payload' }),
+    (0, swagger_1.ApiCreatedResponse)({ description: 'Client created successfully' }),
+    (0, swagger_1.ApiBadRequestResponse)({ description: 'Invalid request body' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('create-client'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -33,6 +41,8 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ClientsController.prototype, "createClient", null);
 exports.ClientsController = ClientsController = __decorate([
+    (0, swagger_1.ApiTags)('Clients'),
+    (0, swagger_1.ApiBearerAuth)(openapi_document_builder_1.JWT_AUTH_BEARER),
     (0, common_1.Controller)('api/v1'),
     __metadata("design:paramtypes", [clients_service_1.ClientsService])
 ], ClientsController);

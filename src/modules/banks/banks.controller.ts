@@ -7,20 +7,26 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
 import { BanksService } from './banks.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateBankDto } from './dto/create-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
 
 @ApiTags('Banks')
+@ApiBearerAuth(JWT_AUTH_BEARER)
 @Controller('api/v1/banks')
+@UseGuards(JwtAuthGuard)
 export class BanksController {
   constructor(private readonly banksService: BanksService) {}
 
