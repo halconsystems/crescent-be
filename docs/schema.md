@@ -120,7 +120,7 @@ City master: `CityID` PK, `CityName` unique, `IsActive`, `CreatedAt`, `UpdatedAt
 - `Employee` (optional).
 - **Created-by:** `CreatedByUserID` → another `AppUser`; inverse lists users created by this user.
 - **Roles:** `UserRole` rows; assignment may reference `AssignedByUserID` → `AppUser`.
-- **Auth artifacts:** `PasswordResetToken`, `UserPasswordHistory`, `UserSession`.
+- **Auth artifacts:** (none listed).
 
 **Intended rule (enforce in DB if required):** `FailedLoginAttempts >= 0` (see [Check constraints](#check-constraints)).
 
@@ -136,50 +136,6 @@ City master: `CityID` PK, `CityName` unique, `IsActive`, `CreatedAt`, `UpdatedAt
 | `CreatedAt`, `UpdatedAt` | | |
 
 **Constraint:** unique pair `(UserID, RoleID)`.
-
-### `PasswordResetToken` (`PasswordResetToken`)
-
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| `ResetTokenID` | PK | |
-| `UserID` | FK → `AppUser` | required |
-| `TokenHash` | `TEXT` | required |
-| `RequestedAt`, `ExpiresAt` | `TIMESTAMP` | `RequestedAt` defaults to now |
-| `UsedAt` | `TIMESTAMP` | optional |
-| `RequestedIP`, `RequestedUserAgent` | `TEXT` | optional |
-| `IsActive` | `BOOLEAN` | default `true` |
-| `CreatedAt` | `TIMESTAMP` | default now (no `UpdatedAt` on this model) |
-
-**Intended rule:** `ExpiresAt > RequestedAt` (see [Check constraints](#check-constraints)).
-
-### `UserPasswordHistory` (`UserPasswordHistory`)
-
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| `PasswordHistoryID` | PK | |
-| `UserID` | FK → `AppUser` | required |
-| `PasswordHash` | `TEXT` | required |
-| `CreatedAt` | `TIMESTAMP` | default now |
-
-### `UserSession` (`UserSession`)
-
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| `SessionID` | PK | |
-| `UserID` | FK → `AppUser` | required |
-| `RefreshTokenHash` | `TEXT` | required |
-| `JwtID` | `TEXT` | optional, unique when present |
-| `DeviceInfo`, `IPV4`, `IPV6`, `UserAgent` | `TEXT` | optional |
-| `IssuedAt` | `TIMESTAMP` | default now |
-| `ExpiresAt` | `TIMESTAMP` | required |
-| `LastUsedAt`, `RevokedAt` | `TIMESTAMP` | optional |
-| `RevokedReason` | `TEXT` | optional |
-| `ReplacedBySessionID` | FK → `UserSession` | optional (session rotation / replacement chain) |
-| `IsActive`, `CreatedAt`, `UpdatedAt` | | |
-
-**Relations:** `ReplacedBySessionID` points to the replacing session; the inverse collection lists sessions that this session replaced.
-
-**Intended rule:** `ExpiresAt > IssuedAt` (see [Check constraints](#check-constraints)).
 
 ---
 
@@ -245,9 +201,7 @@ Office ──< Zone ──< ZoneEmployee >── Employee >── AppUser
                     └── (optional City) Vendor
 Bank ──< BankAccount
 City ──< Vendor
-Role ──< UserRole >── AppUser ──< PasswordResetToken
-                    ├── UserPasswordHistory
-                    ├── UserSession (self-FK for replacement)
+Role ──< UserRole >── AppUser
                     └── (optional) Employee
 ```
 
@@ -260,8 +214,6 @@ The following rules are part of the domain spec but are **not** declared in `sch
 | Table | Rule |
 | ----- | ---- |
 | `AppUser` | `FailedLoginAttempts >= 0` |
-| `PasswordResetToken` | `ExpiresAt > RequestedAt` |
-| `UserSession` | `ExpiresAt > IssuedAt` |
 | `Package` | `MinCharges` / `MinRenewalCharges` non-negative when not null (typically `(col IS NULL OR col >= 0)`) |
 
 ---

@@ -39,9 +39,6 @@ export function createPrismaServiceMock(): PrismaService {
     employee: del(),
     appUser: del(),
     userRole: del(),
-    passwordResetToken: del(),
-    userPasswordHistory: del(),
-    userSession: del(),
     clientCategory: del(),
     package: del(),
     zone: del(),
@@ -306,100 +303,6 @@ export function seedHappyPathMocks(prisma: ReturnType<typeof createPrismaService
   m.userRole.delete.mockImplementation(async (args: { where: { userRoleId: number } }) =>
     userRole(args.where.userRoleId),
   );
-
-  const prt = (id: number) => ({
-    resetTokenId: id,
-    userId: 1,
-    tokenHash: 'hash',
-    requestedAt: now(),
-    expiresAt: new Date('2099-01-01'),
-    usedAt: null as Date | null,
-    requestedIp: null as string | null,
-    requestedUserAgent: null as string | null,
-    isActive: true,
-    createdAt: now(),
-  });
-  m.passwordResetToken.findMany.mockResolvedValue([]);
-  m.passwordResetToken.findUnique.mockImplementation(
-    async (args: { where: { resetTokenId: number } }) => prt(args.where.resetTokenId),
-  );
-  m.passwordResetToken.create.mockImplementation(async (args: { data: object }) => ({ ...prt(1), ...args.data }));
-  m.passwordResetToken.update.mockImplementation(
-    async (args: { where: { resetTokenId: number }; data: object }) => ({
-      ...prt(args.where.resetTokenId),
-      ...args.data,
-    }),
-  );
-  m.passwordResetToken.delete.mockImplementation(async (args: { where: { resetTokenId: number } }) =>
-    prt(args.where.resetTokenId),
-  );
-  m.passwordResetToken.findFirst.mockResolvedValue(null);
-
-  const uph = (id: number) => ({
-    passwordHistoryId: id,
-    userId: 1,
-    passwordHash: 'hash',
-    createdAt: now(),
-  });
-  m.userPasswordHistory.findMany.mockResolvedValue([
-    { passwordHistoryId: 1, userId: 1, createdAt: now() },
-  ]);
-  m.userPasswordHistory.findUnique.mockImplementation(
-    async (args: { where: { passwordHistoryId: number }; select?: object }) => {
-      const row = uph(args.where.passwordHistoryId);
-      if (args.select) {
-        return {
-          passwordHistoryId: row.passwordHistoryId,
-          userId: row.userId,
-          createdAt: row.createdAt,
-        };
-      }
-      return row;
-    },
-  );
-  m.userPasswordHistory.create.mockImplementation(async (args: { data: { userId: number; passwordHash: string } }) => ({
-    passwordHistoryId: 1,
-    userId: args.data.userId,
-    passwordHash: args.data.passwordHash,
-    createdAt: now(),
-  }));
-  m.userPasswordHistory.delete.mockImplementation(async (args: { where: { passwordHistoryId: number } }) =>
-    uph(args.where.passwordHistoryId),
-  );
-  m.userPasswordHistory.findFirst.mockResolvedValue(null);
-
-  const session = (id: number) => ({
-    sessionId: id,
-    userId: 1,
-    refreshTokenHash: 'rt-hash',
-    jwtId: null as string | null,
-    deviceInfo: null as string | null,
-    ipv4: null as string | null,
-    ipv6: null as string | null,
-    userAgent: null as string | null,
-    issuedAt: now(),
-    expiresAt: new Date('2099-12-31'),
-    lastUsedAt: null as Date | null,
-    revokedAt: null as Date | null,
-    revokedReason: null as string | null,
-    replacedBySessionId: null as number | null,
-    isActive: true,
-    createdAt: now(),
-    updatedAt: now(),
-  });
-  m.userSession.findMany.mockResolvedValue([]);
-  m.userSession.findUnique.mockImplementation(async (args: { where: { sessionId: number } }) =>
-    session(args.where.sessionId),
-  );
-  m.userSession.create.mockImplementation(async (args: { data: object }) => ({ ...session(1), ...args.data }));
-  m.userSession.update.mockImplementation(async (args: { where: { sessionId: number }; data: object }) => ({
-    ...session(args.where.sessionId),
-    ...args.data,
-  }));
-  m.userSession.delete.mockImplementation(async (args: { where: { sessionId: number } }) =>
-    session(args.where.sessionId),
-  );
-  m.userSession.findFirst.mockResolvedValue(null);
 
   const cat = (id: number) => ({
     categoryId: id,

@@ -91,26 +91,6 @@ const routes: RouteCase[] = [
   { name: 'user-roles patch', method: 'patch', path: api('/api/v1/user-roles/1'), body: patchBodies.userRole, expected: 200 },
   { name: 'user-roles delete', method: 'delete', path: api('/api/v1/user-roles/1'), expected: 200 },
 
-  { name: 'password-reset-tokens list', method: 'get', path: api('/api/v1/password-reset-tokens'), expected: 200 },
-  { name: 'password-reset-tokens list filter', method: 'get', path: api('/api/v1/password-reset-tokens?userId=1'), expected: 200 },
-  { name: 'password-reset-tokens create', method: 'post', path: api('/api/v1/password-reset-tokens'), body: postBodies.passwordResetToken, expected: 201 },
-  { name: 'password-reset-tokens get', method: 'get', path: api('/api/v1/password-reset-tokens/1'), expected: 200 },
-  { name: 'password-reset-tokens patch', method: 'patch', path: api('/api/v1/password-reset-tokens/1'), body: patchBodies.passwordResetToken, expected: 200 },
-  { name: 'password-reset-tokens delete', method: 'delete', path: api('/api/v1/password-reset-tokens/1'), expected: 200 },
-
-  { name: 'user-password-history create', method: 'post', path: api('/api/v1/user-password-history'), body: postBodies.userPasswordHistory, expected: 201 },
-  { name: 'user-password-history list', method: 'get', path: api('/api/v1/user-password-history'), expected: 200 },
-  { name: 'user-password-history list filter', method: 'get', path: api('/api/v1/user-password-history?userId=1'), expected: 200 },
-  { name: 'user-password-history get', method: 'get', path: api('/api/v1/user-password-history/1'), expected: 200 },
-  { name: 'user-password-history delete', method: 'delete', path: api('/api/v1/user-password-history/1'), expected: 200 },
-
-  { name: 'user-sessions list', method: 'get', path: api('/api/v1/user-sessions'), expected: 200 },
-  { name: 'user-sessions list filter', method: 'get', path: api('/api/v1/user-sessions?userId=1'), expected: 200 },
-  { name: 'user-sessions create', method: 'post', path: api('/api/v1/user-sessions'), body: postBodies.userSession, expected: 201 },
-  { name: 'user-sessions get', method: 'get', path: api('/api/v1/user-sessions/1'), expected: 200 },
-  { name: 'user-sessions patch', method: 'patch', path: api('/api/v1/user-sessions/1'), body: patchBodies.userSession, expected: 200 },
-  { name: 'user-sessions delete', method: 'delete', path: api('/api/v1/user-sessions/1'), expected: 200 },
-
   { name: 'client-categories list', method: 'get', path: api('/api/v1/client-categories'), expected: 200 },
   { name: 'client-categories create', method: 'post', path: api('/api/v1/client-categories'), body: postBodies.clientCategory, expected: 201 },
   { name: 'client-categories get', method: 'get', path: api('/api/v1/client-categories/1'), expected: 200 },

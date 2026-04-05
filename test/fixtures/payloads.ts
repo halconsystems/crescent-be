@@ -15,17 +15,6 @@ export const postBodies = {
   employee: { cnic: '35202-1111111-1', designation: DesignationType.Staff },
   appUser: { userName: 'route-test-user', password: 'Password1!' },
   userRole: { userId: 1, roleId: 1 },
-  passwordResetToken: {
-    userId: 1,
-    token: 'plain-reset-token',
-    expiresAt: futureIso,
-  },
-  userPasswordHistory: { userId: 1, password: 'Password1!' },
-  userSession: {
-    userId: 1,
-    refreshToken: 'plain-refresh-token',
-    expiresAt: futureIso,
-  },
   clientCategory: { categoryName: 'Residential' },
   package: {
     packageName: 'Basic',
@@ -54,8 +43,6 @@ export const patchBodies = {
   employee: { nextOfKin: 'Jane' },
   appUser: { isLocked: false },
   userRole: { roleId: 1 },
-  passwordResetToken: { isActive: false },
-  userSession: { isActive: true },
   clientCategory: { categoryName: 'Commercial' },
   package: { minCharges: 200 },
   zoneEmployee: {},
