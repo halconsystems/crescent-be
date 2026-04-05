@@ -13,6 +13,22 @@ async function bootstrapServer() {
   if (!cachedApp) {
     const expressApp = express();
     const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
+    const corsOrigins = (process.env.CORS_ORIGIN ?? process.env.FRONTEND_URL ?? 'http://localhost:3000')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    app.enableCors({
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        if (!origin || corsOrigins.includes(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(new Error(`CORS blocked for origin: ${origin}`), false);
+      },
+      credentials: true,
+    });
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
