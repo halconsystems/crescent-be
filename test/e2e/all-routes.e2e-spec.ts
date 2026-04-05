@@ -79,7 +79,7 @@ const routes: RouteCase[] = [
   { name: 'employees delete', method: 'delete', path: api('/api/v1/employees/1'), expected: 200 },
 
   { name: 'app-users list', method: 'get', path: api('/api/v1/app-users'), expected: 200 },
-  { name: 'app-users create', method: 'post', path: api('/api/v1/app-users'), body: postBodies.appUser, expected: 201 },
+  { name: 'auth register', method: 'post', path: api('/api/v1/auth/register'), body: postBodies.appUser, expected: 201 },
   { name: 'app-users get', method: 'get', path: api('/api/v1/app-users/1'), expected: 200 },
   { name: 'app-users patch', method: 'patch', path: api('/api/v1/app-users/1'), body: patchBodies.appUser, expected: 200 },
   { name: 'app-users delete', method: 'delete', path: api('/api/v1/app-users/1'), expected: 200 },

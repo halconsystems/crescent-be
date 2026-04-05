@@ -1,5 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { AppUser, Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { PrismaService } from '../../database/prisma.service';
 import {
@@ -7,11 +8,15 @@ import {
   getRefreshTokenExpiresAt,
   hashRefreshToken,
 } from './refresh-token.util';
+import { RegisterDto } from './dto/register.dto';
+import { UpdateAppUserDto } from './dto/update.dto';
 
 export interface JwtPayload {
   sub: number;
   email: string;
 }
+
+type AppUserPublic = Omit<AppUser, 'passwordHash'>;
 
 type RefreshTokenMeta = {
   userAgent?: string | null;
@@ -26,6 +31,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  private toPublic(user: AppUser): AppUserPublic {
+    const { passwordHash: _p, ...rest } = user;
+    return rest;
+  }
+
   async validateUser(email: string, password: string) {
     const user = await this.prisma.appUser.findUnique({ where: { email } });
     if (!user) {
@@ -35,8 +45,64 @@ export class AuthService {
     if (!ok) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const { passwordHash, ...rest } = user;
-    return rest;
+    return this.toPublic(user);
+  }
+
+  async register(dto: RegisterDto) {
+    const passwordHash = await argon2.hash(dto.password);
+    const user = await this.prisma.appUser.create({
+      data: {
+        email: dto.email,
+        passwordHash,
+        dob: new Date(dto.dob),
+        cnic: dto.cnic,
+        contactNo: dto.contactNo,
+        address: dto.address,
+      },
+    });
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.userId,
+      email: user.email,
+    });
+    const { refreshToken } = await this.createRefreshToken(user.userId);
+    return { accessToken, refreshToken, user: this.toPublic(user) };
+  }
+
+  async listUsers() {
+    const rows = await this.prisma.appUser.findMany({ orderBy: { userId: 'asc' } });
+    return rows.map((u) => this.toPublic(u));
+  }
+
+  async getUser(userId: number) {
+    const user = await this.findUserRaw(userId);
+    return this.toPublic(user);
+  }
+
+  private async findUserRaw(userId: number) {
+    const row = await this.prisma.appUser.findUnique({ where: { userId } });
+    if (!row) throw new NotFoundException(`User ${userId} not found`);
+    return row;
+  }
+
+  async updateUser(userId: number, dto: UpdateAppUserDto) {
+    await this.findUserRaw(userId);
+    const data: Prisma.AppUserUncheckedUpdateInput = {};
+    if (dto.email !== undefined) data.email = dto.email;
+    if (dto.dob !== undefined) data.dob = new Date(dto.dob);
+    if (dto.cnic !== undefined) data.cnic = dto.cnic;
+    if (dto.contactNo !== undefined) data.contactNo = dto.contactNo;
+    if (dto.address !== undefined) data.address = dto.address;
+    if (dto.password) {
+      data.passwordHash = await argon2.hash(dto.password);
+    }
+    const user = await this.prisma.appUser.update({ where: { userId }, data });
+    return this.toPublic(user);
+  }
+
+  async removeUser(userId: number) {
+    await this.findUserRaw(userId);
+    const user = await this.prisma.appUser.delete({ where: { userId } });
+    return this.toPublic(user);
   }
 
   private async createRefreshToken(userId: number, meta?: RefreshTokenMeta) {

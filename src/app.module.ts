@@ -12,7 +12,6 @@ import { CitiesModule } from './modules/cities/cities.module';
 import { VendorsModule } from './modules/vendors/vendors.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { EmployeesModule } from './modules/employees/employees.module';
-import { AppUsersModule } from './modules/app-users/app-users.module';
 import { UserRolesModule } from './modules/user-roles/user-roles.module';
 import { ClientCategoriesModule } from './modules/client-categories/client-categories.module';
 import { PackagesModule } from './modules/packages/packages.module';
@@ -40,7 +39,6 @@ import { AuthModule } from './modules/auth/auth.module';
     VendorsModule,
     RolesModule,
     EmployeesModule,
-    AppUsersModule,
     UserRolesModule,
     ClientCategoriesModule,
     PackagesModule,

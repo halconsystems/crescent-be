@@ -7,7 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateAppUserDto {
+export class RegisterDto {
   @ApiProperty({ example: 'jdoe@example.com' })
   @IsNotEmpty()
   @IsEmail()
@@ -38,5 +38,4 @@ export class CreateAppUserDto {
   @IsNotEmpty()
   @IsString()
   address: string;
-
 }

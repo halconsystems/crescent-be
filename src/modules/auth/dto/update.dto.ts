@@ -38,5 +38,4 @@ export class UpdateAppUserDto {
   @IsOptional()
   @IsString()
   address?: string;
-
 }
