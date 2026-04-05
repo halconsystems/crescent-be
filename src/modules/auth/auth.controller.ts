@@ -1,26 +1,17 @@
 import {
   Body,
   Controller,
-  Delete,
-  Get,
   HttpCode,
   HttpStatus,
-  Param,
-  ParseIntPipe,
-  Patch,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -30,9 +21,6 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { RegisterDto } from './dto/register.dto';
-import { JWT_AUTH_BEARER } from '../../swagger/openapi-document.builder';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { UpdateAppUserDto } from './dto/update.dto';
 
 @Controller('api/v1')
 export class AuthController {
@@ -98,45 +86,4 @@ export class AuthController {
     return this.authService.logout(dto.refreshToken);
   }
 
-  @Get('app-users')
-  @ApiTags('Users')
-  @ApiBearerAuth(JWT_AUTH_BEARER)
-  @ApiOperation({ summary: 'List application users (password hash omitted)' })
-  @UseGuards(JwtAuthGuard)
-  findAllAppUsers() {
-    return this.authService.listUsers();
-  }
-
-  @Get('app-users/:id')
-  @ApiTags('Users')
-  @ApiBearerAuth(JWT_AUTH_BEARER)
-  @ApiOperation({ summary: 'Get application user by id' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiNotFoundResponse()
-  @UseGuards(JwtAuthGuard)
-  findOneAppUser(@Param('id', ParseIntPipe) id: number) {
-    return this.authService.getUser(id);
-  }
-
-  @Patch('app-users/:id')
-  @ApiTags('Users')
-  @ApiBearerAuth(JWT_AUTH_BEARER)
-  @ApiOperation({ summary: 'Update application user' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiNotFoundResponse()
-  @UseGuards(JwtAuthGuard)
-  updateAppUser(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateAppUserDto) {
-    return this.authService.updateUser(id, dto);
-  }
-
-  @Delete('app-users/:id')
-  @ApiTags('Users')
-  @ApiBearerAuth(JWT_AUTH_BEARER)
-  @ApiOperation({ summary: 'Delete application user' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiNotFoundResponse()
-  @UseGuards(JwtAuthGuard)
-  removeAppUser(@Param('id', ParseIntPipe) id: number) {
-    return this.authService.removeUser(id);
-  }
 }

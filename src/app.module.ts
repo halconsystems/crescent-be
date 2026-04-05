@@ -17,6 +17,7 @@ import { ClientCategoriesModule } from './modules/client-categories/client-categ
 import { PackagesModule } from './modules/packages/packages.module';
 import { ZoneEmployeesModule } from './modules/zone-employees/zone-employees.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { AppUsersModule } from './modules/app-users/app-users.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AuthModule } from './modules/auth/auth.module';
     PackagesModule,
     ZoneEmployeesModule,
     AuthModule,
+    AppUsersModule,
   ],
   providers: [
     {
