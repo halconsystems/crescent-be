@@ -7,7 +7,7 @@
 | 5  | `@nestjs/jwt`           | JWT authentication and token management      |
 | 6  | `passport`              | Core authentication middleware               |
 | 7  | `passport-jwt`          | JWT auth strategy                            |
-| 8  | `passport-local`        | Username/password auth strategy              |
+| 8  | `passport-local`        | Email/password auth strategy                 |
 | 9  | `@nestjs/config`        | Environment and app config management        |
 | 10 | `@prisma/client`        | Prisma runtime database client               |
 | 11 | `prisma`                | Prisma migrations and schema generation      |

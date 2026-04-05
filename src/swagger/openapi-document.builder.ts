@@ -13,8 +13,9 @@ export function buildOpenApiDocument() {
     .setTitle('Crescent API')
     .setDescription(
       'REST API for onboarding and reference data. Base path for resources is `/api/v1/...`. ' +
-        '**Authentication:** call **Auth → login** to obtain a JWT, then click **Authorize** and enter `Bearer <token>` (or only the token, depending on the UI). ' +
-        'All routes except `POST /api/v1/auth/login` require a valid JWT. ' +
+        '**Authentication:** call **Auth → login** or **App users → create** to obtain tokens, then click **Authorize** and enter `Bearer <token>` (or only the token, depending on the UI). ' +
+        'Use **Auth → refresh** to rotate refresh tokens and issue new access tokens, and **Auth → logout** to revoke a refresh token. ' +
+        'All routes except `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, and `POST /api/v1/auth/logout` require a valid JWT. ' +
         'Sensitive fields (passwords, token hashes) are never returned where noted in operation summaries.',
     )
     .setVersion('1.0')
@@ -24,7 +25,7 @@ export function buildOpenApiDocument() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
         description:
-          'JWT access token from `POST /api/v1/auth/login`. Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`',
+          'JWT access token from `POST /api/v1/auth/login` or `POST /api/v1/app-users`. Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`',
       },
       JWT_AUTH_BEARER,
     )

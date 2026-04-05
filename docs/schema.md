@@ -2,7 +2,7 @@
 
 The canonical definition lives in [`prisma/schema.prisma`](../prisma/schema.prisma). The app targets **PostgreSQL** via `DATABASE_URL`.
 
-Prisma **model** names use PascalCase (for example `AppUser`). **Table** names in the database are set with `@@map` (for example `"Office"`, `"AppUser"`). **Columns** use `@map` so stored names match the onboarding spec (for example `OfficeID`, `UserName`).
+Prisma **model** names use PascalCase (for example `AppUser`). **Table** names in the database are set with `@@map` (for example `"Office"`, `"AppUser"`). **Columns** use `@map` so stored names match the onboarding spec (for example `OfficeID`, `EmailID`).
 
 ---
 
@@ -96,33 +96,39 @@ City master: `CityID` PK, `CityName` unique, `IsActive`, `CreatedAt`, `UpdatedAt
 | `NextOfKin`, `NextOfKinContact` | `TEXT` | optional |
 | `IsActive`, `CreatedAt`, `UpdatedAt` | | |
 
-**Relations:** optional one-to-one `AppUser`; many `ZoneEmployee`.
+**Relations:** many `ZoneEmployee`.
 
 ### `AppUser` (`AppUser`)
 
 | Column | Type | Notes |
 | ------ | ---- | ----- |
 | `UserID` | PK | |
-| `EmployeeID` | FK → `Employee` | optional, unique (at most one user per employee) |
-| `UserName` | `TEXT` | unique, required |
+| `EmailID` | `TEXT` | unique, required |
 | `PasswordHash` | `TEXT` | required |
-| `IsTempPassword`, `MustChangePassword` | `BOOLEAN` | default `true` |
-| `IsEmailVerified`, `IsMobileVerified` | `BOOLEAN` | default `false` |
-| `IsActive` | `BOOLEAN` | default `true` |
-| `IsLocked` | `BOOLEAN` | default `false` |
-| `FailedLoginAttempts` | `INT` | default `0` |
-| `LastLoginAt`, `LastPasswordChangedAt` | `TIMESTAMP` | optional |
+| `DOB` | `TIMESTAMP` | required |
+| `CNIC` | `TEXT` | unique, required |
+| `ContactNo` | `TEXT` | required |
+| `Address` | `TEXT` | required |
 | `CreatedAt`, `UpdatedAt` | `TIMESTAMP` | |
-| `CreatedByUserID` | FK → `AppUser` | optional (self-reference) |
 
 **Relations:**
 
-- `Employee` (optional).
-- **Created-by:** `CreatedByUserID` → another `AppUser`; inverse lists users created by this user.
 - **Roles:** `UserRole` rows; assignment may reference `AssignedByUserID` → `AppUser`.
-- **Auth artifacts:** (none listed).
+- **Auth artifacts:** `RefreshToken`.
 
-**Intended rule (enforce in DB if required):** `FailedLoginAttempts >= 0` (see [Check constraints](#check-constraints)).
+### `RefreshToken` (`RefreshToken`)
+
+| Column | Type | Notes |
+| ------ | ---- | ----- |
+| `RefreshTokenID` | PK | |
+| `UserID` | FK → `AppUser` | required |
+| `TokenHash` | `TEXT` | unique, required (SHA-256) |
+| `IssuedAt` | `TIMESTAMP` | default now |
+| `ExpiresAt` | `TIMESTAMP` | required |
+| `RevokedAt` | `TIMESTAMP` | optional |
+| `RevokedReason` | `TEXT` | optional |
+| `ReplacedByTokenID` | FK → `RefreshToken` | optional (rotation chain) |
+| `UserAgent`, `IPV4`, `IPV6` | `TEXT` | optional |
 
 ### `UserRole` (`UserRole`)
 
@@ -197,12 +203,12 @@ The `Client` model maps to table `Client` (default naming from Prisma). It preda
 ## Relationship overview
 
 ```text
-Office ──< Zone ──< ZoneEmployee >── Employee >── AppUser
+Office ──< Zone ──< ZoneEmployee >── Employee
                     └── (optional City) Vendor
 Bank ──< BankAccount
 City ──< Vendor
 Role ──< UserRole >── AppUser
-                    └── (optional) Employee
+AppUser ──< RefreshToken
 ```
 
 ---
@@ -213,7 +219,7 @@ The following rules are part of the domain spec but are **not** declared in `sch
 
 | Table | Rule |
 | ----- | ---- |
-| `AppUser` | `FailedLoginAttempts >= 0` |
+| `RefreshToken` | `ExpiresAt > IssuedAt` |
 | `Package` | `MinCharges` / `MinRenewalCharges` non-negative when not null (typically `(col IS NULL OR col >= 0)`) |
 
 ---

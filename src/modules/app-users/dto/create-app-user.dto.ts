@@ -1,27 +1,17 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsBoolean,
-  IsInt,
+  IsDateString,
+  IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsString,
   MinLength,
-  Min,
 } from 'class-validator';
 
 export class CreateAppUserDto {
-  @ApiPropertyOptional({ example: 1 })
-  @Type(() => Number)
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  employeeId?: number;
-
-  @ApiProperty({ example: 'jdoe' })
+  @ApiProperty({ example: 'jdoe@example.com' })
   @IsNotEmpty()
-  @IsString()
-  userName: string;
+  @IsEmail()
+  email: string;
 
   @ApiProperty({ minLength: 8, example: 'SecurePass1!' })
   @IsNotEmpty()
@@ -29,40 +19,24 @@ export class CreateAppUserDto {
   @MinLength(8)
   password: string;
 
-  @ApiPropertyOptional({ default: true })
-  @IsOptional()
-  @IsBoolean()
-  isTempPassword?: boolean;
+  @ApiProperty({ type: String, format: 'date-time', example: '1990-01-01T00:00:00.000Z' })
+  @IsNotEmpty()
+  @IsDateString()
+  dob: string;
 
-  @ApiPropertyOptional({ default: true })
-  @IsOptional()
-  @IsBoolean()
-  mustChangePassword?: boolean;
+  @ApiProperty({ example: '35202-1234567-1' })
+  @IsNotEmpty()
+  @IsString()
+  cnic: string;
 
-  @ApiPropertyOptional({ default: false })
-  @IsOptional()
-  @IsBoolean()
-  isEmailVerified?: boolean;
+  @ApiProperty({ example: '+923001234567' })
+  @IsNotEmpty()
+  @IsString()
+  contactNo: string;
 
-  @ApiPropertyOptional({ default: false })
-  @IsOptional()
-  @IsBoolean()
-  isMobileVerified?: boolean;
+  @ApiProperty({ example: 'Street 1, City' })
+  @IsNotEmpty()
+  @IsString()
+  address: string;
 
-  @ApiPropertyOptional({ default: true })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
-  @ApiPropertyOptional({ default: false })
-  @IsOptional()
-  @IsBoolean()
-  isLocked?: boolean;
-
-  @ApiPropertyOptional()
-  @Type(() => Number)
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  createdByUserId?: number;
 }

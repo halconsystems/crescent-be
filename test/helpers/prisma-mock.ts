@@ -39,6 +39,7 @@ export function createPrismaServiceMock(): PrismaService {
     employee: del(),
     appUser: del(),
     userRole: del(),
+    refreshToken: del(),
     clientCategory: del(),
     package: del(),
     zone: del(),
@@ -61,21 +62,30 @@ function baseOffice(id: number) {
 function baseAppUser(id: number) {
   return {
     userId: id,
-    employeeId: null as number | null,
-    userName: 'tester',
+    email: 'tester@example.com',
     passwordHash: 'argon2-hash',
-    isTempPassword: true,
-    mustChangePassword: true,
-    isEmailVerified: false,
-    isMobileVerified: false,
-    isActive: true,
-    isLocked: false,
-    failedLoginAttempts: 0,
-    lastLoginAt: null as Date | null,
-    lastPasswordChangedAt: null as Date | null,
+    dob: new Date('1990-01-01T00:00:00.000Z'),
+    cnic: '35202-3333333-3',
+    contactNo: '+923001234567',
+    address: 'Street 1, City',
     createdAt: now(),
     updatedAt: now(),
-    createdByUserId: null as number | null,
+  };
+}
+
+function baseRefreshToken(id: number) {
+  return {
+    refreshTokenId: id,
+    userId: 1,
+    tokenHash: 'hash',
+    issuedAt: now(),
+    expiresAt: new Date('2099-12-31T23:59:59.000Z'),
+    revokedAt: null as Date | null,
+    revokedReason: null as string | null,
+    replacedByTokenId: null as number | null,
+    userAgent: null as string | null,
+    ipv4: null as string | null,
+    ipv6: null as string | null,
   };
 }
 
@@ -263,11 +273,10 @@ export function seedHappyPathMocks(prisma: ReturnType<typeof createPrismaService
 
   m.appUser.findMany.mockResolvedValue([baseAppUser(1)]);
   m.appUser.findUnique.mockImplementation(async (args: {
-    where: { userId?: number; userName?: string; employeeId?: number };
+    where: { userId?: number; email?: string };
   }) => {
     if (args.where.userId != null) return baseAppUser(args.where.userId);
-    if (args.where.userName != null) return { ...baseAppUser(1), userName: args.where.userName };
-    if (args.where.employeeId != null) return null;
+    if (args.where.email != null) return { ...baseAppUser(1), email: args.where.email };
     return baseAppUser(1);
   });
   m.appUser.create.mockImplementation(async (args: { data: object }) => ({
@@ -280,6 +289,32 @@ export function seedHappyPathMocks(prisma: ReturnType<typeof createPrismaService
   }));
   m.appUser.delete.mockImplementation(async (args: { where: { userId: number } }) => baseAppUser(args.where.userId));
   m.appUser.findFirst.mockResolvedValue(null);
+
+  m.refreshToken.findUnique.mockImplementation(async (args: {
+    where: { refreshTokenId?: number; tokenHash?: string };
+  }) => {
+    if (args.where.refreshTokenId != null) return baseRefreshToken(args.where.refreshTokenId);
+    if (args.where.tokenHash != null) {
+      return { ...baseRefreshToken(1), tokenHash: args.where.tokenHash };
+    }
+    return null;
+  });
+  m.refreshToken.create.mockImplementation(async (args: { data: object }) => ({
+    ...baseRefreshToken(1),
+    ...args.data,
+    refreshTokenId: 1,
+  }));
+  m.refreshToken.update.mockImplementation(
+    async (args: { where: { refreshTokenId: number }; data: object }) => ({
+      ...baseRefreshToken(args.where.refreshTokenId),
+      ...args.data,
+    }),
+  );
+  m.refreshToken.delete.mockImplementation(async (args: { where: { refreshTokenId: number } }) =>
+    baseRefreshToken(args.where.refreshTokenId),
+  );
+  m.refreshToken.findMany.mockResolvedValue([]);
+  m.refreshToken.findFirst.mockResolvedValue(null);
 
   const userRole = (id: number) => ({
     userRoleId: id,

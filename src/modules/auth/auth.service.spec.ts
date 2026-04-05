@@ -40,15 +40,13 @@ describe('AuthService', () => {
     const hash = await argon2.hash('Password1!');
     prismaMock.appUser.findUnique.mockResolvedValue({
       userId: 1,
-      userName: 'jdoe',
+      email: 'jdoe@example.com',
       passwordHash: hash,
-      isActive: true,
-      isLocked: false,
     });
 
-    const result = await service.validateUser('jdoe', 'Password1!');
+    const result = await service.validateUser('jdoe@example.com', 'Password1!');
     expect(result.userId).toBe(1);
-    expect(result.userName).toBe('jdoe');
+    expect(result.email).toBe('jdoe@example.com');
   });
 });
 

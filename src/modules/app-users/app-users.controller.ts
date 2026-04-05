@@ -12,6 +12,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -32,9 +33,10 @@ export class AppUsersController {
   constructor(private readonly appUsersService: AppUsersService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create application user (password is hashed; hash is never returned)' })
+  @ApiOperation({ summary: 'Create application user and return access/refresh tokens' })
+  @ApiCreatedResponse({ description: 'Access token, refresh token, and user payload returned' })
   @ApiBadRequestResponse()
-  @ApiConflictResponse({ description: 'Username or employee already in use' })
+  @ApiConflictResponse({ description: 'Email already in use' })
   create(@Body() dto: CreateAppUserDto) {
     return this.appUsersService.create(dto);
   }

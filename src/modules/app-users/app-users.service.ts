@@ -1,15 +1,24 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { AppUser, Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateAppUserDto } from './dto/create-app-user.dto';
 import { UpdateAppUserDto } from './dto/update-app-user.dto';
+import {
+  generateRefreshToken,
+  getRefreshTokenExpiresAt,
+  hashRefreshToken,
+} from '../auth/refresh-token.util';
 
 type AppUserPublic = Omit<AppUser, 'passwordHash'>;
 
 @Injectable()
 export class AppUsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   private toPublic(user: AppUser): AppUserPublic {
     const { passwordHash: _p, ...rest } = user;
@@ -17,37 +26,32 @@ export class AppUsersService {
   }
 
   async create(dto: CreateAppUserDto) {
-    if (dto.employeeId != null) {
-      const emp = await this.prisma.employee.findUnique({
-        where: { employeeId: dto.employeeId },
-      });
-      if (!emp) throw new NotFoundException(`Employee ${dto.employeeId} not found`);
-      const existing = await this.prisma.appUser.findUnique({
-        where: { employeeId: dto.employeeId },
-      });
-      if (existing) {
-        throw new ConflictException(`Employee ${dto.employeeId} already linked to a user`);
-      }
-    }
-    if (dto.createdByUserId != null) {
-      await this.findOneRaw(dto.createdByUserId);
-    }
     const passwordHash = await argon2.hash(dto.password);
     const user = await this.prisma.appUser.create({
       data: {
-        employeeId: dto.employeeId,
-        userName: dto.userName,
+        email: dto.email,
         passwordHash,
-        isTempPassword: dto.isTempPassword ?? true,
-        mustChangePassword: dto.mustChangePassword ?? true,
-        isEmailVerified: dto.isEmailVerified ?? false,
-        isMobileVerified: dto.isMobileVerified ?? false,
-        isActive: dto.isActive ?? true,
-        isLocked: dto.isLocked ?? false,
-        createdByUserId: dto.createdByUserId,
+        dob: new Date(dto.dob),
+        cnic: dto.cnic,
+        contactNo: dto.contactNo,
+        address: dto.address,
       },
     });
-    return this.toPublic(user);
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.userId,
+      email: user.email,
+    });
+    const issuedAt = new Date();
+    const refreshToken = generateRefreshToken();
+    await this.prisma.refreshToken.create({
+      data: {
+        userId: user.userId,
+        tokenHash: hashRefreshToken(refreshToken),
+        issuedAt,
+        expiresAt: getRefreshTokenExpiresAt(issuedAt),
+      },
+    });
+    return { accessToken, refreshToken, user: this.toPublic(user) };
   }
 
   async findAll() {
@@ -70,34 +74,12 @@ export class AppUsersService {
 
   async update(userId: number, dto: UpdateAppUserDto) {
     await this.findOneRaw(userId);
-    if (dto.employeeId != null) {
-      const emp = await this.prisma.employee.findUnique({
-        where: { employeeId: dto.employeeId },
-      });
-      if (!emp) throw new NotFoundException(`Employee ${dto.employeeId} not found`);
-    }
-    if (dto.createdByUserId != null) {
-      await this.findOneRaw(dto.createdByUserId);
-    }
     const data: Prisma.AppUserUncheckedUpdateInput = {};
-    if (dto.employeeId !== undefined) data.employeeId = dto.employeeId;
-    if (dto.userName !== undefined) data.userName = dto.userName;
-    if (dto.isTempPassword !== undefined) data.isTempPassword = dto.isTempPassword;
-    if (dto.mustChangePassword !== undefined) data.mustChangePassword = dto.mustChangePassword;
-    if (dto.isEmailVerified !== undefined) data.isEmailVerified = dto.isEmailVerified;
-    if (dto.isMobileVerified !== undefined) data.isMobileVerified = dto.isMobileVerified;
-    if (dto.isActive !== undefined) data.isActive = dto.isActive;
-    if (dto.isLocked !== undefined) data.isLocked = dto.isLocked;
-    if (dto.failedLoginAttempts !== undefined) data.failedLoginAttempts = dto.failedLoginAttempts;
-    if (dto.createdByUserId !== undefined) data.createdByUserId = dto.createdByUserId;
-    if (dto.lastLoginAt !== undefined) {
-      data.lastLoginAt = dto.lastLoginAt ? new Date(dto.lastLoginAt) : null;
-    }
-    if (dto.lastPasswordChangedAt !== undefined) {
-      data.lastPasswordChangedAt = dto.lastPasswordChangedAt
-        ? new Date(dto.lastPasswordChangedAt)
-        : null;
-    }
+    if (dto.email !== undefined) data.email = dto.email;
+    if (dto.dob !== undefined) data.dob = new Date(dto.dob);
+    if (dto.cnic !== undefined) data.cnic = dto.cnic;
+    if (dto.contactNo !== undefined) data.contactNo = dto.contactNo;
+    if (dto.address !== undefined) data.address = dto.address;
     if (dto.password) {
       data.passwordHash = await argon2.hash(dto.password);
     }

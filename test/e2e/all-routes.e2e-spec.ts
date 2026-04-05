@@ -156,7 +156,7 @@ describe('HTTP API (e2e)', () => {
 
   beforeAll(async () => {
     ctx = await createTestApp();
-    const token = await ctx.jwtService.signAsync({ sub: 1, username: 'tester' });
+    const token = await ctx.jwtService.signAsync({ sub: 1, email: 'tester@example.com' });
     authHeader = { Authorization: `Bearer ${token}` };
   });
 
@@ -191,26 +191,15 @@ describe('HTTP API (e2e)', () => {
       const hash = await argon2.hash('Password1!');
       (ctx.prismaMock.appUser.findUnique as jest.Mock).mockResolvedValue({
         userId: 1,
-        employeeId: null,
-        userName: 'loginuser',
+        email: 'loginuser@example.com',
         passwordHash: hash,
-        isTempPassword: true,
-        mustChangePassword: true,
-        isEmailVerified: false,
-        isMobileVerified: false,
-        isActive: true,
-        isLocked: false,
-        failedLoginAttempts: 0,
-        lastLoginAt: null,
-        lastPasswordChangedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        createdByUserId: null,
       });
 
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/auth/login')
-        .send({ username: 'loginuser', password: 'Password1!' })
+        .send({ email: 'loginuser@example.com', password: 'Password1!' })
         .expect(200);
 
       expect(res.body.accessToken).toBeDefined();
