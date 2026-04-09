@@ -14,7 +14,6 @@ dist/
 *.tsbuildinfo
 
 # Environment files
-.env
 
 # Logs
 logs/
@@ -36,3 +35,4 @@ coverage/
 tmp/
 temp/
 debug/
+config.bat
