@@ -6,7 +6,22 @@ const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 const openapi_document_builder_1 = require("./swagger/openapi-document.builder");
 async function bootstrap() {
+    var _a, _b;
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const corsOrigins = ((_b = (_a = process.env.CORS_ORIGIN) !== null && _a !== void 0 ? _a : process.env.FRONTEND_URL) !== null && _b !== void 0 ? _b : 'http://localhost:3000')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+    app.enableCors({
+        origin: (origin, callback) => {
+            if (!origin || corsOrigins.includes(origin)) {
+                callback(null, true);
+                return;
+            }
+            callback(new Error(`CORS blocked for origin: ${origin}`), false);
+        },
+        credentials: true,
+    });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,

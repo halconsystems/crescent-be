@@ -21,15 +21,12 @@ const cities_module_1 = require("./modules/cities/cities.module");
 const vendors_module_1 = require("./modules/vendors/vendors.module");
 const roles_module_1 = require("./modules/roles/roles.module");
 const employees_module_1 = require("./modules/employees/employees.module");
-const app_users_module_1 = require("./modules/app-users/app-users.module");
 const user_roles_module_1 = require("./modules/user-roles/user-roles.module");
-const password_reset_tokens_module_1 = require("./modules/password-reset-tokens/password-reset-tokens.module");
-const user_password_history_module_1 = require("./modules/user-password-history/user-password-history.module");
-const user_sessions_module_1 = require("./modules/user-sessions/user-sessions.module");
 const client_categories_module_1 = require("./modules/client-categories/client-categories.module");
 const packages_module_1 = require("./modules/packages/packages.module");
 const zone_employees_module_1 = require("./modules/zone-employees/zone-employees.module");
 const auth_module_1 = require("./modules/auth/auth.module");
+const app_user_module_1 = require("./modules/app-users/app-user.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -55,15 +52,12 @@ exports.AppModule = AppModule = __decorate([
             vendors_module_1.VendorsModule,
             roles_module_1.RolesModule,
             employees_module_1.EmployeesModule,
-            app_users_module_1.AppUsersModule,
             user_roles_module_1.UserRolesModule,
-            password_reset_tokens_module_1.PasswordResetTokensModule,
-            user_password_history_module_1.UserPasswordHistoryModule,
-            user_sessions_module_1.UserSessionsModule,
             client_categories_module_1.ClientCategoriesModule,
             packages_module_1.PackagesModule,
             zone_employees_module_1.ZoneEmployeesModule,
             auth_module_1.AuthModule,
+            app_user_module_1.AppUsersModule,
         ],
         providers: [
             {
