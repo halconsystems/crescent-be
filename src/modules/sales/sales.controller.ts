@@ -38,10 +38,10 @@ export class SalesController {
 
   @Post()
   @RequirePermissions('sales.create')
-  @ApiOperation({ summary: 'Create sale shell and initial stage statuses' })
+  @ApiOperation({ summary: 'Create sale and fill sales-stage payload' })
   @ApiCreatedResponse()
-  create(@Req() req: AuthedReq) {
-    return this.salesService.create(req.user.userId);
+  create(@Req() req: AuthedReq, @Body() dto: PatchSalesStageDto) {
+    return this.salesService.create(req.user.userId, dto);
   }
 
   @Get()
@@ -66,14 +66,6 @@ export class SalesController {
   @ApiNotFoundResponse()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.salesService.findOne(id);
-  }
-
-  @Patch(':id/sales-stage')
-  @RequirePermissions('sales.edit.client', 'sales.edit.product')
-  @ApiOperation({ summary: 'Upsert sales-stage client/product rows; optional submit to accounts' })
-  @ApiParam({ name: 'id' })
-  patchSalesStage(@Param('id', ParseIntPipe) id: number, @Req() req: AuthedReq, @Body() dto: PatchSalesStageDto) {
-    return this.salesService.patchSalesStage(id, req.user.userId, dto);
   }
 
   @Patch(':id/accounts-stage')
