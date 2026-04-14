@@ -18,7 +18,6 @@ dist/*
 # Logs
 logs/
 *.log
-.env
 
 # IDEs
 .vscode/

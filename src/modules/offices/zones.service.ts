@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
@@ -43,7 +43,26 @@ export class ZonesService {
   }
 
   async remove(zoneId: number) {
-    await this.findOne(zoneId);
+    const zone = await this.prisma.zone.findUnique({
+      where: { zoneId },
+      select: {
+        zoneId: true,
+        _count: {
+          select: {
+            zoneEmployees: true,
+            saleOperationsAssignments: true,
+          },
+        },
+      },
+    });
+    if (!zone) throw new NotFoundException(`Zone ${zoneId} not found`);
+
+    if (zone._count.zoneEmployees > 0 || zone._count.saleOperationsAssignments > 0) {
+      throw new BadRequestException(
+        `Zone ${zoneId} cannot be deleted because it is referenced by related records`,
+      );
+    }
+
     return this.prisma.zone.delete({ where: { zoneId } });
   }
 }

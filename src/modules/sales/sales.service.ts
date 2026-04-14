@@ -84,9 +84,9 @@ export class SalesService {
     });
   }
 
-  async create(userId: number) {
+  async create(userId: number, dto: PatchSalesStageDto = {}) {
     const saleCode = `SAL-${randomBytes(6).toString('hex').toUpperCase()}`;
-    return this.prisma.sale.create({
+    const sale = await this.prisma.sale.create({
       data: {
         saleCode,
         createdByUserId: userId,
@@ -103,6 +103,13 @@ export class SalesService {
       },
       include: this.saleInclude(),
     });
+
+    const hasSalesStagePayload = Object.values(dto).some((value) => value !== undefined);
+    if (!hasSalesStagePayload) {
+      return sale;
+    }
+
+    return this.patchSalesStage(sale.saleId, userId, dto);
   }
 
   findAll() {
