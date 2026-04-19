@@ -12,13 +12,14 @@ dist/
 dist/*
 # TypeScript
 *.tsbuildinfo
+.env
+
 
 # Environment files
 
 # Logs
 logs/
 *.log
-.env
 
 # IDEs
 .vscode/
@@ -37,3 +38,39 @@ tmp/
 temp/
 debug/
 config.bat
+.DS_Store
+*.pem
+*.key
+*.crt
+*.pfx
+*.cer
+*.p12
+*.jks
+*.p7b
+*.p7c
+*.der
+*.csr
+*.srl
+*.log
+*.bak
+*.orig
+node_modules/
+dist/
+build/
+coverage/
+*.log
+*.env
+*.local
+*.cache
+*.tmp
+*.swp
+*.swo
+*.swn
+*.swo
+*.swn
+*.swo
+*.swn
+*.swo
+*.swn
+*.swo
+*.swn

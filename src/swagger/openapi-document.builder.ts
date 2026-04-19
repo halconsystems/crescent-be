@@ -112,6 +112,7 @@ export function buildOpenApiDocument() {
       'Inventory reports': 'Inventory card and movement/purchase report endpoints',
       'Inventory utility': 'Dropdown and compatibility utility endpoints',
       'Inventory dashboard': 'Stats, low stock, out-of-stock, and bulk operations',
+      Sales: 'Sale lifecycle, stage progression, and audit — JWT + permission codes',
       Permissions: 'Permission catalog (`permissionCode` strings used by RBAC)',
       'Role permissions': 'Links roles to permissions',
       Roles: 'Named roles; combine with Role permissions for access control',
