@@ -525,3 +525,359 @@ model SaleAuditLog {
 
   @@map("SaleAuditLog")
 }
+
+enum InvApprovalStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+}
+
+enum InvGrnStatus {
+  DRAFT
+  CONFIRMED
+}
+
+enum InvMovementType {
+  GRN_IN
+  ISSUANCE_OUT
+  RETURN_IN
+  TRANSFER_OUT
+  TRANSFER_IN
+}
+
+model InvStore {
+  storeId      Int      @id @default(autoincrement()) @map("StoreID")
+  storeName    String   @unique @map("StoreName")
+  location     String?  @map("Location")
+  isActive     Boolean  @default(true) @map("IsActive")
+  createdAt    DateTime @default(now()) @map("CreatedAt")
+  updatedAt    DateTime @updatedAt @map("UpdatedAt")
+
+  itemsToStore  InvItem[]
+  prHeaders     InvPurchaseRequest[]
+  poHeaders     InvPurchaseOrder[]
+  grnHeaders    InvGrn[]
+  issuanceHeads InvIssuance[]
+  returnHeads   InvReturn[]
+  transferFroms InvTransfer[] @relation("InvTransferFromStore")
+  transferTos   InvTransfer[] @relation("InvTransferToStore")
+  ledgerRows    InvStockLedger[]
+
+  @@map("InvStore")
+}
+
+model InvCategory {
+  categoryId   Int      @id @default(autoincrement()) @map("CategoryID")
+  categoryName String   @unique @map("CategoryName")
+  isActive     Boolean  @default(true) @map("IsActive")
+  createdAt    DateTime @default(now()) @map("CreatedAt")
+  updatedAt    DateTime @updatedAt @map("UpdatedAt")
+
+  items InvItem[]
+
+  @@map("InvCategory")
+}
+
+model InvGroup {
+  groupId      Int      @id @default(autoincrement()) @map("GroupID")
+  groupName    String   @unique @map("GroupName")
+  description  String?  @map("Description")
+  isActive     Boolean  @default(true) @map("IsActive")
+  createdAt    DateTime @default(now()) @map("CreatedAt")
+  updatedAt    DateTime @updatedAt @map("UpdatedAt")
+
+  items InvItem[]
+
+  @@map("InvGroup")
+}
+
+model InvVendor {
+  vendorId      Int      @id @default(autoincrement()) @map("VendorID")
+  vendorName    String   @unique @map("VendorName")
+  contactPerson String?  @map("ContactPerson")
+  phone         String?  @map("Phone")
+  email         String?  @map("Email")
+  address       String?  @map("Address")
+  isActive      Boolean  @default(true) @map("IsActive")
+  createdAt     DateTime @default(now()) @map("CreatedAt")
+  updatedAt     DateTime @updatedAt @map("UpdatedAt")
+
+  purchaseOrders InvPurchaseOrder[]
+
+  @@map("InvVendor")
+}
+
+model InvItem {
+  itemId         Int      @id @default(autoincrement()) @map("ItemID")
+  sku            String   @unique @map("SKU")
+  itemName       String   @map("ItemName")
+  categoryId     Int?     @map("CategoryID")
+  groupId        Int?     @map("GroupID")
+  defaultStoreId Int?     @map("DefaultStoreID")
+  uom            String?  @map("UOM")
+  reorderLevel   Int      @default(0) @map("ReorderLevel")
+  isActive       Boolean  @default(true) @map("IsActive")
+  createdAt      DateTime @default(now()) @map("CreatedAt")
+  updatedAt      DateTime @updatedAt @map("UpdatedAt")
+
+  category     InvCategory? @relation(fields: [categoryId], references: [categoryId])
+  group        InvGroup?    @relation(fields: [groupId], references: [groupId])
+  defaultStore InvStore?    @relation(fields: [defaultStoreId], references: [storeId])
+
+  prLines       InvPurchaseRequestLine[]
+  poLines       InvPurchaseOrderLine[]
+  grnLines      InvGrnLine[]
+  issuanceLines InvIssuanceLine[]
+  returnLines   InvReturnLine[]
+  transferLines InvTransferLine[] @relation("InvTransferOutItem")
+  ledgerRows    InvStockLedger[]
+
+  @@index([itemName])
+  @@index([categoryId])
+  @@index([defaultStoreId])
+  @@map("InvItem")
+}
+
+model InvPurchaseRequest {
+  purchaseRequestId Int               @id @default(autoincrement()) @map("PurchaseRequestID")
+  requestNo         String            @unique @map("RequestNo")
+  storeId           Int?              @map("StoreID")
+  status            InvApprovalStatus @default(DRAFT) @map("Status")
+  remarks           String?           @map("Remarks")
+  requestedByUserId Int?              @map("RequestedByUserID")
+  approvedByUserId  Int?              @map("ApprovedByUserID")
+  approvedAt        DateTime?         @map("ApprovedAt")
+  rejectedByUserId  Int?              @map("RejectedByUserID")
+  rejectedAt        DateTime?         @map("RejectedAt")
+  rejectionReason   String?           @map("RejectionReason")
+  createdAt         DateTime          @default(now()) @map("CreatedAt")
+  updatedAt         DateTime          @updatedAt @map("UpdatedAt")
+
+  store InvStore? @relation(fields: [storeId], references: [storeId])
+  lines InvPurchaseRequestLine[]
+  purchaseOrders InvPurchaseOrder[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("InvPurchaseRequest")
+}
+
+model InvPurchaseRequestLine {
+  purchaseRequestLineId Int      @id @default(autoincrement()) @map("PurchaseRequestLineID")
+  purchaseRequestId     Int      @map("PurchaseRequestID")
+  itemId                Int      @map("ItemID")
+  qty                   Int      @map("Qty")
+  note                  String?  @map("Note")
+  createdAt             DateTime @default(now()) @map("CreatedAt")
+  updatedAt             DateTime @updatedAt @map("UpdatedAt")
+
+  purchaseRequest InvPurchaseRequest @relation(fields: [purchaseRequestId], references: [purchaseRequestId], onDelete: Cascade)
+  item            InvItem            @relation(fields: [itemId], references: [itemId])
+
+  @@index([itemId])
+  @@map("InvPurchaseRequestLine")
+}
+
+model InvPurchaseOrder {
+  purchaseOrderId    Int               @id @default(autoincrement()) @map("PurchaseOrderID")
+  poNo               String            @unique @map("PONo")
+  purchaseRequestId  Int?              @map("PurchaseRequestID")
+  vendorId           Int?              @map("VendorID")
+  storeId            Int?              @map("StoreID")
+  status             InvApprovalStatus @default(DRAFT) @map("Status")
+  orderedByUserId    Int?              @map("OrderedByUserID")
+  approvedByUserId   Int?              @map("ApprovedByUserID")
+  approvedAt         DateTime?         @map("ApprovedAt")
+  rejectedByUserId   Int?              @map("RejectedByUserID")
+  rejectedAt         DateTime?         @map("RejectedAt")
+  rejectionReason    String?           @map("RejectionReason")
+  remarks            String?           @map("Remarks")
+  createdAt          DateTime          @default(now()) @map("CreatedAt")
+  updatedAt          DateTime          @updatedAt @map("UpdatedAt")
+
+  purchaseRequest InvPurchaseRequest?   @relation(fields: [purchaseRequestId], references: [purchaseRequestId])
+  vendor          InvVendor?            @relation(fields: [vendorId], references: [vendorId])
+  store           InvStore?             @relation(fields: [storeId], references: [storeId])
+  lines           InvPurchaseOrderLine[]
+  grns            InvGrn[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("InvPurchaseOrder")
+}
+
+model InvPurchaseOrderLine {
+  purchaseOrderLineId Int      @id @default(autoincrement()) @map("PurchaseOrderLineID")
+  purchaseOrderId     Int      @map("PurchaseOrderID")
+  itemId              Int      @map("ItemID")
+  qty                 Int      @map("Qty")
+  unitPrice           Decimal? @map("UnitPrice") @db.Decimal(12, 2)
+  note                String?  @map("Note")
+  createdAt           DateTime @default(now()) @map("CreatedAt")
+  updatedAt           DateTime @updatedAt @map("UpdatedAt")
+
+  purchaseOrder InvPurchaseOrder @relation(fields: [purchaseOrderId], references: [purchaseOrderId], onDelete: Cascade)
+  item          InvItem          @relation(fields: [itemId], references: [itemId])
+
+  @@index([itemId])
+  @@map("InvPurchaseOrderLine")
+}
+
+model InvGrn {
+  grnId              Int          @id @default(autoincrement()) @map("GRNID")
+  grnNo              String       @unique @map("GRNNo")
+  purchaseOrderId    Int?         @map("PurchaseOrderID")
+  storeId            Int?         @map("StoreID")
+  status             InvGrnStatus @default(DRAFT) @map("Status")
+  receivedByUserId   Int?         @map("ReceivedByUserID")
+  confirmedByUserId  Int?         @map("ConfirmedByUserID")
+  confirmedAt        DateTime?    @map("ConfirmedAt")
+  remarks            String?      @map("Remarks")
+  createdAt          DateTime     @default(now()) @map("CreatedAt")
+  updatedAt          DateTime     @updatedAt @map("UpdatedAt")
+
+  purchaseOrder InvPurchaseOrder? @relation(fields: [purchaseOrderId], references: [purchaseOrderId])
+  store         InvStore?         @relation(fields: [storeId], references: [storeId])
+  lines         InvGrnLine[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("InvGRN")
+}
+
+model InvGrnLine {
+  grnLineId   Int      @id @default(autoincrement()) @map("GRNLineID")
+  grnId       Int      @map("GRNID")
+  itemId      Int      @map("ItemID")
+  qtyReceived Int      @map("QtyReceived")
+  note        String?  @map("Note")
+  createdAt   DateTime @default(now()) @map("CreatedAt")
+  updatedAt   DateTime @updatedAt @map("UpdatedAt")
+
+  grn  InvGrn  @relation(fields: [grnId], references: [grnId], onDelete: Cascade)
+  item InvItem @relation(fields: [itemId], references: [itemId])
+
+  @@index([itemId])
+  @@map("InvGRNLine")
+}
+
+model InvIssuance {
+  issuanceId    Int      @id @default(autoincrement()) @map("IssuanceID")
+  issuanceNo    String   @unique @map("IssuanceNo")
+  storeId       Int      @map("StoreID")
+  issuedTo      String?  @map("IssuedTo")
+  remarks       String?  @map("Remarks")
+  issuedByUserId Int?    @map("IssuedByUserID")
+  createdAt     DateTime @default(now()) @map("CreatedAt")
+  updatedAt     DateTime @updatedAt @map("UpdatedAt")
+
+  store InvStore @relation(fields: [storeId], references: [storeId])
+  lines InvIssuanceLine[]
+
+  @@index([createdAt])
+  @@map("InvIssuance")
+}
+
+model InvIssuanceLine {
+  issuanceLineId Int      @id @default(autoincrement()) @map("IssuanceLineID")
+  issuanceId     Int      @map("IssuanceID")
+  itemId         Int      @map("ItemID")
+  qty            Int      @map("Qty")
+  note           String?  @map("Note")
+  createdAt      DateTime @default(now()) @map("CreatedAt")
+  updatedAt      DateTime @updatedAt @map("UpdatedAt")
+
+  issuance InvIssuance @relation(fields: [issuanceId], references: [issuanceId], onDelete: Cascade)
+  item     InvItem     @relation(fields: [itemId], references: [itemId])
+
+  @@index([itemId])
+  @@map("InvIssuanceLine")
+}
+
+model InvReturn {
+  returnId        Int      @id @default(autoincrement()) @map("ReturnID")
+  returnNo        String   @unique @map("ReturnNo")
+  storeId         Int      @map("StoreID")
+  sourceReference String?  @map("SourceReference")
+  remarks         String?  @map("Remarks")
+  returnedByUserId Int?    @map("ReturnedByUserID")
+  createdAt       DateTime @default(now()) @map("CreatedAt")
+  updatedAt       DateTime @updatedAt @map("UpdatedAt")
+
+  store InvStore @relation(fields: [storeId], references: [storeId])
+  lines InvReturnLine[]
+
+  @@index([createdAt])
+  @@map("InvReturn")
+}
+
+model InvReturnLine {
+  returnLineId Int      @id @default(autoincrement()) @map("ReturnLineID")
+  returnId     Int      @map("ReturnID")
+  itemId       Int      @map("ItemID")
+  qty          Int      @map("Qty")
+  note         String?  @map("Note")
+  createdAt    DateTime @default(now()) @map("CreatedAt")
+  updatedAt    DateTime @updatedAt @map("UpdatedAt")
+
+  return InvReturn @relation(fields: [returnId], references: [returnId], onDelete: Cascade)
+  item   InvItem   @relation(fields: [itemId], references: [itemId])
+
+  @@index([itemId])
+  @@map("InvReturnLine")
+}
+
+model InvTransfer {
+  transferId     Int      @id @default(autoincrement()) @map("TransferID")
+  transferNo     String   @unique @map("TransferNo")
+  fromStoreId    Int      @map("FromStoreID")
+  toStoreId      Int      @map("ToStoreID")
+  remarks        String?  @map("Remarks")
+  transferredByUserId Int? @map("TransferredByUserID")
+  createdAt      DateTime @default(now()) @map("CreatedAt")
+  updatedAt      DateTime @updatedAt @map("UpdatedAt")
+
+  fromStore InvStore @relation("InvTransferFromStore", fields: [fromStoreId], references: [storeId])
+  toStore   InvStore @relation("InvTransferToStore", fields: [toStoreId], references: [storeId])
+  lines     InvTransferLine[]
+
+  @@index([createdAt])
+  @@map("InvTransfer")
+}
+
+model InvTransferLine {
+  transferLineId Int      @id @default(autoincrement()) @map("TransferLineID")
+  transferId     Int      @map("TransferID")
+  itemId         Int      @map("ItemID")
+  qty            Int      @map("Qty")
+  note           String?  @map("Note")
+  createdAt      DateTime @default(now()) @map("CreatedAt")
+  updatedAt      DateTime @updatedAt @map("UpdatedAt")
+
+  transfer InvTransfer @relation(fields: [transferId], references: [transferId], onDelete: Cascade)
+  item     InvItem     @relation("InvTransferOutItem", fields: [itemId], references: [itemId])
+
+  @@index([itemId])
+  @@map("InvTransferLine")
+}
+
+model InvStockLedger {
+  stockLedgerId  Int             @id @default(autoincrement()) @map("StockLedgerID")
+  movementType   InvMovementType @map("MovementType")
+  itemId         Int             @map("ItemID")
+  storeId        Int             @map("StoreID")
+  qtyIn          Int             @default(0) @map("QtyIn")
+  qtyOut         Int             @default(0) @map("QtyOut")
+  movementDate   DateTime        @default(now()) @map("MovementDate")
+  referenceType  String          @map("ReferenceType")
+  referenceId    Int             @map("ReferenceID")
+  remarks        String?         @map("Remarks")
+  createdAt      DateTime        @default(now()) @map("CreatedAt")
+
+  item  InvItem  @relation(fields: [itemId], references: [itemId])
+  store InvStore @relation(fields: [storeId], references: [storeId])
+
+  @@index([itemId, storeId, movementDate])
+  @@index([referenceType, referenceId])
+  @@map("InvStockLedger")
+}

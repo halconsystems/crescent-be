@@ -25,6 +25,7 @@ import { DeviceCombosModule } from './modules/device-combos/device-combos.module
 import { AccessoriesModule } from './modules/accessories/accessories.module';
 import { PermissionDefinitionsModule } from './modules/permission-definitions/permission-definitions.module';
 import { RolePermissionsModule } from './modules/role-permissions/role-permissions.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { RolePermissionsModule } from './modules/role-permissions/role-permissio
     AccessoriesModule,
     PermissionDefinitionsModule,
     RolePermissionsModule,
+    InventoryModule,
   ],
   providers: [
     {

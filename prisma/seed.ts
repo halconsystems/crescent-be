@@ -1,33 +1,16 @@
 import { PrismaClient } from '@prisma/client';
+import * as argon2 from 'argon2';
+import { PORTAL_PERMISSION_DEFS } from '../src/common/rbac/portal-permissions';
 
 const prisma = new PrismaClient();
 
 const ADMIN_ROLE = 'System Administrator';
-
-/** Keep in sync with src/common/rbac/portal-permissions.ts */
-const PORTAL_PERMISSION_DEFS: ReadonlyArray<{ code: string; description: string }> = [
-  { code: 'sales.create', description: 'Create a new sale' },
-  { code: 'sales.view', description: 'View sales' },
-  { code: 'sales.edit.client', description: 'Edit sales-stage client fields' },
-  { code: 'sales.edit.product', description: 'Edit sales-stage product fields' },
-  { code: 'sales.submit.accounts', description: 'Submit sale to accounts' },
-  { code: 'accounts.view', description: 'View accounts stage' },
-  { code: 'accounts.review', description: 'Review accounts stage' },
-  { code: 'accounts.hold', description: 'Hold at accounts' },
-  { code: 'accounts.approve', description: 'Approve accounts' },
-  { code: 'accounts.reject', description: 'Reject at accounts' },
-  { code: 'operations.view', description: 'View operations stage' },
-  { code: 'operations.assign.device', description: 'Assign device / combo / SIM / accessories' },
-  { code: 'operations.assign.technician', description: 'Assign technician user' },
-  { code: 'operations.submit.technician', description: 'Hand off to technician stage' },
-  { code: 'technician.view', description: 'View technician / installation data' },
-  { code: 'technician.install.complete', description: 'Complete installation workflow' },
-  { code: 'technician.install.edit', description: 'Edit installation fields' },
-  { code: 'sales.reopen', description: 'Reopen a sale stage (admin)' },
-  { code: 'sales.audit.view', description: 'View sale audit log' },
-];
+const ADMIN_EMAIL = 'admin@halcon.com';
+const ADMIN_PASSWORD = 'Admin123';
 
 async function main() {
+  const adminPasswordHash = await argon2.hash(ADMIN_PASSWORD);
+
   for (const p of PORTAL_PERMISSION_DEFS) {
     await prisma.permission.upsert({
       where: { permissionCode: p.code },
@@ -42,9 +25,8 @@ async function main() {
     update: { isActive: true },
   });
 
-  const permissions = await prisma.permission.findMany({
-    where: { permissionCode: { in: PORTAL_PERMISSION_DEFS.map((d) => d.code) } },
-  });
+  // Ensure System Administrator always has every permission in DB (including future/manual additions).
+  const permissions = await prisma.permission.findMany();
 
   for (const perm of permissions) {
     await prisma.rolePermission.upsert({
@@ -56,8 +38,38 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${permissions.length} permissions and linked to role "${ADMIN_ROLE}" (roleId=${role.roleId}).`);
-  console.log('Assign this role to users via POST /api/v1/user-roles if needed.');
+  const adminUser = await prisma.appUser.upsert({
+    where: { email: ADMIN_EMAIL },
+    create: {
+      email: ADMIN_EMAIL,
+      passwordHash: adminPasswordHash,
+      dob: new Date('1990-01-01T00:00:00.000Z'),
+      cnic: '42201-0000000-1',
+      contactNo: '+920000000000',
+      address: 'System Seed User',
+    },
+    update: {
+      passwordHash: adminPasswordHash,
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: adminUser.userId,
+        roleId: role.roleId,
+      },
+    },
+    create: {
+      userId: adminUser.userId,
+      roleId: role.roleId,
+      assignedByUserId: adminUser.userId,
+    },
+    update: {},
+  });
+
+  console.log(`Linked ${permissions.length} total permissions to role "${ADMIN_ROLE}" (roleId=${role.roleId}).`);
+  console.log(`Ensured admin user "${ADMIN_EMAIL}" exists and is assigned "${ADMIN_ROLE}".`);
 }
 
 main()

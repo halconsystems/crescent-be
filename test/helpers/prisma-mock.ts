@@ -73,6 +73,24 @@ export function createPrismaServiceMock(): PrismaService {
     saleInstallation: del(),
     saleStageStatus: del(),
     saleAuditLog: del(),
+    invStore: del(),
+    invCategory: del(),
+    invGroup: del(),
+    invVendor: del(),
+    invItem: del(),
+    invPurchaseRequest: del(),
+    invPurchaseRequestLine: del(),
+    invPurchaseOrder: del(),
+    invPurchaseOrderLine: del(),
+    invGrn: del(),
+    invGrnLine: del(),
+    invIssuance: del(),
+    invIssuanceLine: del(),
+    invReturn: del(),
+    invReturnLine: del(),
+    invTransfer: del(),
+    invTransferLine: del(),
+    invStockLedger: del(),
   };
   return mock as unknown as PrismaService;
 }
@@ -454,9 +472,13 @@ export function seedHappyPathMocks(prisma: ReturnType<typeof createPrismaService
     isActive: true,
     createdAt: now(),
     updatedAt: now(),
+    zoneEmployees: [] as Array<unknown>,
   });
   m.zone.findMany.mockResolvedValue([]);
-  m.zone.findUnique.mockImplementation(async (args: { where: { zoneId: number } }) => zone(args.where.zoneId));
+  m.zone.findUnique.mockImplementation(async (args: { where: { zoneId: number } }) => ({
+    ...zone(args.where.zoneId),
+    _count: { zoneEmployees: 0, saleOperationsAssignments: 0 },
+  }));
   m.zone.create.mockImplementation(async (args: { data: object }) => ({ ...zone(1), ...args.data }));
   m.zone.update.mockImplementation(async (args: { where: { zoneId: number }; data: object }) => ({
     ...zone(args.where.zoneId),
@@ -718,4 +740,238 @@ export function seedHappyPathMocks(prisma: ReturnType<typeof createPrismaService
     async (args: { where: { accessoryId: number } }) => acc.row(args.where.accessoryId),
   );
   m.accessory.findFirst.mockResolvedValue(null);
+
+  const invStore = (id: number) => ({
+    storeId: id,
+    storeName: `Store ${id}`,
+    location: null as string | null,
+    isActive: true,
+    createdAt: now(),
+    updatedAt: now(),
+  });
+  m.invStore.findMany.mockResolvedValue([invStore(1)]);
+  m.invStore.findUnique.mockImplementation(async (args: { where: { storeId: number } }) => invStore(args.where.storeId));
+  m.invStore.create.mockImplementation(async (args: { data: object }) => ({ ...invStore(1), ...args.data }));
+  m.invStore.update.mockImplementation(async (args: { where: { storeId: number }; data: object }) => ({
+    ...invStore(args.where.storeId),
+    ...args.data,
+  }));
+  m.invStore.delete.mockImplementation(async (args: { where: { storeId: number } }) => invStore(args.where.storeId));
+
+  const invCategory = (id: number) => ({
+    categoryId: id,
+    categoryName: `Category ${id}`,
+    isActive: true,
+    createdAt: now(),
+    updatedAt: now(),
+  });
+  m.invCategory.findMany.mockResolvedValue([invCategory(1)]);
+  m.invCategory.findUnique.mockImplementation(async (args: { where: { categoryId: number } }) => invCategory(args.where.categoryId));
+  m.invCategory.create.mockImplementation(async (args: { data: object }) => ({ ...invCategory(1), ...args.data }));
+  m.invCategory.update.mockImplementation(async (args: { where: { categoryId: number }; data: object }) => ({
+    ...invCategory(args.where.categoryId),
+    ...args.data,
+  }));
+  m.invCategory.delete.mockImplementation(async (args: { where: { categoryId: number } }) => invCategory(args.where.categoryId));
+
+  const invGroup = (id: number) => ({
+    groupId: id,
+    groupName: `Group ${id}`,
+    description: null as string | null,
+    isActive: true,
+    createdAt: now(),
+    updatedAt: now(),
+  });
+  m.invGroup.findMany.mockResolvedValue([invGroup(1)]);
+  m.invGroup.findUnique.mockImplementation(async (args: { where: { groupId: number } }) => invGroup(args.where.groupId));
+  m.invGroup.create.mockImplementation(async (args: { data: object }) => ({ ...invGroup(1), ...args.data }));
+  m.invGroup.update.mockImplementation(async (args: { where: { groupId: number }; data: object }) => ({
+    ...invGroup(args.where.groupId),
+    ...args.data,
+  }));
+  m.invGroup.delete.mockImplementation(async (args: { where: { groupId: number } }) => invGroup(args.where.groupId));
+
+  const invVendor = (id: number) => ({
+    vendorId: id,
+    vendorName: `Inventory Vendor ${id}`,
+    contactPerson: null as string | null,
+    phone: null as string | null,
+    email: null as string | null,
+    address: null as string | null,
+    isActive: true,
+    createdAt: now(),
+    updatedAt: now(),
+  });
+  m.invVendor.findMany.mockResolvedValue([invVendor(1)]);
+  m.invVendor.findUnique.mockImplementation(async (args: { where: { vendorId: number } }) => invVendor(args.where.vendorId));
+  m.invVendor.create.mockImplementation(async (args: { data: object }) => ({ ...invVendor(1), ...args.data }));
+  m.invVendor.update.mockImplementation(async (args: { where: { vendorId: number }; data: object }) => ({
+    ...invVendor(args.where.vendorId),
+    ...args.data,
+  }));
+  m.invVendor.delete.mockImplementation(async (args: { where: { vendorId: number } }) => invVendor(args.where.vendorId));
+
+  const invItem = (id: number) => ({
+    itemId: id,
+    sku: `SKU-${id}`,
+    itemName: `Item ${id}`,
+    categoryId: 1,
+    groupId: 1,
+    defaultStoreId: 1,
+    uom: 'pcs',
+    reorderLevel: 1,
+    isActive: true,
+    createdAt: now(),
+    updatedAt: now(),
+  });
+  m.invItem.findMany.mockResolvedValue([invItem(1)]);
+  m.invItem.findUnique.mockImplementation(async (args: { where: { itemId?: number; sku?: string } }) =>
+    invItem(args.where.itemId ?? 1),
+  );
+  m.invItem.create.mockImplementation(async (args: { data: object }) => ({ ...invItem(1), ...args.data }));
+  m.invItem.update.mockImplementation(async (args: { where: { itemId: number }; data: object }) => ({
+    ...invItem(args.where.itemId),
+    ...args.data,
+  }));
+  m.invItem.delete.mockImplementation(async (args: { where: { itemId: number } }) => invItem(args.where.itemId));
+  m.invItem.count = jest.fn().mockResolvedValue(1);
+  m.invStore.count = jest.fn().mockResolvedValue(1);
+
+  const line = { itemId: 1, qty: 1, qtyReceived: 1 };
+  m.invPurchaseRequest.findMany.mockResolvedValue([]);
+  m.invPurchaseRequest.findUnique.mockResolvedValue({
+    purchaseRequestId: 1,
+    requestNo: 'PR-000001',
+    status: 'APPROVED',
+    storeId: 1,
+    remarks: null,
+    requestedByUserId: 1,
+    approvedByUserId: 1,
+    approvedAt: now(),
+    rejectedByUserId: null,
+    rejectedAt: null,
+    rejectionReason: null,
+    createdAt: now(),
+    updatedAt: now(),
+    lines: [{ purchaseRequestLineId: 1, purchaseRequestId: 1, ...line, note: null, createdAt: now(), updatedAt: now() }],
+    store: invStore(1),
+  });
+  m.invPurchaseRequest.create.mockResolvedValue({ purchaseRequestId: 1, requestNo: 'PR-000001', lines: [] });
+  m.invPurchaseRequest.update.mockResolvedValue({ purchaseRequestId: 1, requestNo: 'PR-000001', lines: [] });
+  m.invPurchaseRequest.delete.mockResolvedValue({ purchaseRequestId: 1 });
+  m.invPurchaseRequest.count = jest.fn().mockResolvedValue(1);
+  m.invPurchaseRequestLine.deleteMany = jest.fn().mockResolvedValue({ count: 0 });
+  m.invPurchaseRequestLine.createMany = jest.fn().mockResolvedValue({ count: 1 });
+
+  m.invPurchaseOrder.findMany.mockResolvedValue([]);
+  m.invPurchaseOrder.findUnique.mockResolvedValue({
+    purchaseOrderId: 1,
+    poNo: 'PO-000001',
+    status: 'APPROVED',
+    storeId: 1,
+    vendorId: 1,
+    purchaseRequestId: 1,
+    remarks: null,
+    orderedByUserId: 1,
+    approvedByUserId: 1,
+    approvedAt: now(),
+    rejectedByUserId: null,
+    rejectedAt: null,
+    rejectionReason: null,
+    createdAt: now(),
+    updatedAt: now(),
+    lines: [{ purchaseOrderLineId: 1, purchaseOrderId: 1, ...line, note: null, createdAt: now(), updatedAt: now() }],
+    store: invStore(1),
+    vendor: invVendor(1),
+    purchaseRequest: null,
+  });
+  m.invPurchaseOrder.create.mockResolvedValue({ purchaseOrderId: 1, poNo: 'PO-000001', lines: [] });
+  m.invPurchaseOrder.update.mockResolvedValue({ purchaseOrderId: 1, poNo: 'PO-000001', lines: [] });
+  m.invPurchaseOrder.delete.mockResolvedValue({ purchaseOrderId: 1 });
+  m.invPurchaseOrder.count = jest.fn().mockResolvedValue(1);
+  m.invPurchaseOrderLine.deleteMany = jest.fn().mockResolvedValue({ count: 0 });
+  m.invPurchaseOrderLine.createMany = jest.fn().mockResolvedValue({ count: 1 });
+
+  m.invGrn.findMany.mockResolvedValue([]);
+  m.invGrn.findUnique.mockResolvedValue({
+    grnId: 1,
+    grnNo: 'GRN-000001',
+    status: 'DRAFT',
+    storeId: 1,
+    purchaseOrderId: 1,
+    receivedByUserId: 1,
+    confirmedByUserId: null,
+    confirmedAt: null,
+    remarks: null,
+    createdAt: now(),
+    updatedAt: now(),
+    lines: [{ grnLineId: 1, grnId: 1, itemId: 1, qtyReceived: 1, note: null, createdAt: now(), updatedAt: now() }],
+    store: invStore(1),
+    purchaseOrder: null,
+  });
+  m.invGrn.create.mockResolvedValue({ grnId: 1, grnNo: 'GRN-000001', lines: [] });
+  m.invGrn.update.mockResolvedValue({ grnId: 1, grnNo: 'GRN-000001', lines: [] });
+  m.invGrn.delete.mockResolvedValue({ grnId: 1 });
+  m.invGrn.count = jest.fn().mockResolvedValue(1);
+  m.invGrnLine.deleteMany = jest.fn().mockResolvedValue({ count: 0 });
+  m.invGrnLine.createMany = jest.fn().mockResolvedValue({ count: 1 });
+
+  m.invIssuance.findMany.mockResolvedValue([]);
+  m.invIssuance.findUnique.mockResolvedValue({
+    issuanceId: 1,
+    issuanceNo: 'ISS-000001',
+    storeId: 1,
+    issuedTo: null,
+    remarks: null,
+    issuedByUserId: 1,
+    createdAt: now(),
+    updatedAt: now(),
+    lines: [],
+    store: invStore(1),
+  });
+  m.invIssuance.create.mockResolvedValue({ issuanceId: 1, issuanceNo: 'ISS-000001', lines: [] });
+  m.invIssuance.update.mockResolvedValue({ issuanceId: 1, issuanceNo: 'ISS-000001', lines: [] });
+  m.invIssuance.delete.mockResolvedValue({ issuanceId: 1 });
+  m.invIssuance.count = jest.fn().mockResolvedValue(1);
+
+  m.invReturn.findMany.mockResolvedValue([]);
+  m.invReturn.findUnique.mockResolvedValue({
+    returnId: 1,
+    returnNo: 'RET-000001',
+    storeId: 1,
+    sourceReference: null,
+    remarks: null,
+    returnedByUserId: 1,
+    createdAt: now(),
+    updatedAt: now(),
+    lines: [],
+    store: invStore(1),
+  });
+  m.invReturn.create.mockResolvedValue({ returnId: 1, returnNo: 'RET-000001', lines: [] });
+  m.invReturn.update.mockResolvedValue({ returnId: 1, returnNo: 'RET-000001', lines: [] });
+  m.invReturn.delete.mockResolvedValue({ returnId: 1 });
+  m.invReturn.count = jest.fn().mockResolvedValue(1);
+
+  m.invTransfer.findMany.mockResolvedValue([]);
+  m.invTransfer.findUnique.mockResolvedValue({
+    transferId: 1,
+    transferNo: 'TRF-000001',
+    fromStoreId: 1,
+    toStoreId: 2,
+    remarks: null,
+    transferredByUserId: 1,
+    createdAt: now(),
+    updatedAt: now(),
+    lines: [],
+    fromStore: invStore(1),
+    toStore: invStore(2),
+  });
+  m.invTransfer.create.mockResolvedValue({ transferId: 1, transferNo: 'TRF-000001', lines: [] });
+  m.invTransfer.update.mockResolvedValue({ transferId: 1, transferNo: 'TRF-000001', lines: [] });
+  m.invTransfer.delete.mockResolvedValue({ transferId: 1 });
+  m.invTransfer.count = jest.fn().mockResolvedValue(1);
+
+  m.invStockLedger.findMany.mockResolvedValue([]);
+  m.invStockLedger.aggregate = jest.fn().mockResolvedValue({ _sum: { qtyIn: 100, qtyOut: 10 } });
+  m.invStockLedger.createMany = jest.fn().mockResolvedValue({ count: 1 });
 }

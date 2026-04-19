@@ -22,7 +22,10 @@
         const url = query.get('url') || '/api-json';
         // Keep in sync with src/swagger/openapi-document.builder.ts → SWAGGER_TAG_ORDER
         const TAG_ORDER = [
-          'Auth', 'Users', 'Sales', 'Permissions', 'Role permissions', 'Roles', 'User roles',
+          'Auth', 'Users', 'Sales',
+          'Inventory setup', 'Inventory items', 'Inventory purchase requests', 'Inventory purchase orders',
+          'Inventory grn', 'Inventory movements', 'Inventory reports', 'Inventory utility', 'Inventory dashboard',
+          'Permissions', 'Role permissions', 'Roles', 'User roles',
           'Employees', 'Devices', 'SIMs', 'Device combos', 'Accessories', 'Offices', 'Zones',
           'Zone employees', 'Products', 'Packages', 'Client categories', 'Banks', 'Bank accounts',
           'Cities', 'Vendors',

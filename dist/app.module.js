@@ -34,6 +34,7 @@ const device_combos_module_1 = require("./modules/device-combos/device-combos.mo
 const accessories_module_1 = require("./modules/accessories/accessories.module");
 const permission_definitions_module_1 = require("./modules/permission-definitions/permission-definitions.module");
 const role_permissions_module_1 = require("./modules/role-permissions/role-permissions.module");
+const inventory_module_1 = require("./modules/inventory/inventory.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -72,6 +73,7 @@ exports.AppModule = AppModule = __decorate([
             accessories_module_1.AccessoriesModule,
             permission_definitions_module_1.PermissionDefinitionsModule,
             role_permissions_module_1.RolePermissionsModule,
+            inventory_module_1.InventoryModule,
         ],
         providers: [
             {
